@@ -282,3 +282,31 @@ components:
     padding: "8px 16px"
     height: "32px"
 ---
+
+## Overview
+
+Headspace's marketing surface reads less like a meditation app and more like a children's storybook re-laid as a web product page. The base canvas is a **warm off-white** (`{colors.canvas}` — #f9f4f2), the load-bearing ink is a **warm charcoal** (`{colors.ink}` — #2d2c2b) running every h1, h2, h3, and body paragraph, and the single saturated voltage is a confident blue (`{colors.primary}` — #0061ef) on the "Try for free" CTA pill. Where most meditation brands reach for sage greens or terracotta to signal serenity, Headspace argues through its chrome that wellness can be playful — even loud — as long as the type stays warm and the canvas stays cream.
+
+**Mascot-as-decoration**: The page has no stock photography of meditators in lotus pose, no gradient meshes, no atmospheric mountain scenes. Instead, hand-drawn character orbs — saffron yellow (`{colors.orb-saffron}` — #ffce00), bubble pink (`{colors.orb-pink}` — #ffa1cc), aqua (`{colors.orb-aqua}` — #00a4ff), grass green (`{colors.orb-grass}` — #02873e), ultraviolet (`{colors.orb-ultraviolet}` — #3b197f) — float between sections, cluster above section headings, and sit inside feature chips. Unlike the convention of wellness brands using nature photography as the emotional carrier, Headspace lets the mascots do that work, and reserves the chrome for warm, scarcely-decorated type.
+
+Type runs **Headspace Apercu** alone — display, body, navigation, captions, button labels. There is no display serif, no italic, no monospace, no second family. The system pivots on three weights (400 / 500 / 700) and a size scale climbing from 12px caption (`{typography.caption}`) to a 64px / weight-700 / -1.92px-tracked hero (`{typography.display-xl}`). Shape language is equally restrained: 16px on cards (`{rounded.md}`), 24px on orb tiles and the enterprise band (`{rounded.lg}`), 32px on the primary CTA (`{rounded.xl}`), and the fully-pill 800px (`{rounded.full}`) on secondary outline buttons and the dark "Chat with Ebb" pill. There is no 4px, no 12px in the visible chrome — five radii cover the entire surface.
+
+**Key Characteristics:**
+- Single CTA voltage: `{colors.primary}` (#0061ef) carries the "Try for free" pill, the enterprise band, and a few inline accent dots. No second saturated fill anywhere.
+- Warm-charcoal ink monopoly: `{colors.ink}` (#2d2c2b, frequency 309) runs every h1, h2, h3, and body paragraph. Pure black appears only inside form-input value text.
+- Five-orb mascot taxonomy: saffron, pink, aqua, grass, ultraviolet — each a hand-drawn character that replaces stock photography, gradients, and mesh backgrounds.
+- Cream-as-canvas: `{colors.canvas}` (#f9f4f2) runs the page floor where pure white (`{colors.surface}` — #ffffff, frequency 197) is reserved for card surfaces and form inputs floating over it.
+- One typeface, three weights: Headspace Apercu at 400 / 500 / 700, sizes 12px caption to 64px hero. No serif, no italic.
+- Five-radius geometry: 8 / 16 / 24 / 32 / 800px. The 32px primary CTA radius is the brand's signature — soft enough to read friendly without losing the UI button identity.
+- Hero typography over open canvas: 64px / weight 700 / -1.92px letter-spacing h2 in warm charcoal — the page's loudest typographic moment.
+- No box-shadow tier: every card, every nav surface, every button sits flat — depth comes from 1px `{colors.hairline}` (#e2ded9) hairlines and 16px corner rounding.
+
+## Colors
+
+### Brand & Voltage
+- **Primary Blue** (`{colors.primary}` — #0061ef) — frequency 14. Used as bg (6), text (4), border (4). The single saturated voltage. Anchors the "Try for free" CTA pill, the enterprise "Over 4,000 leading organizations" band, and accent dots inside feature chips. Reserved as the only blue fill — never appears on cards, headlines, or section bands.
+- **Primary Deep** (`{colors.primary-deep}` — #0000ee) — frequency 100. Used as text (50), border (50). A deeper indigo that surfaces on inline link text and the press state of the primary CTA pill. Despite the high raw count, it appears only on links inside body paragraphs — never as a fill.
+
+### Surface
+- **Canvas** (`{colors.canvas}` — #f9f4f2) — frequency 27. Used as bg (27). The warm off-white page floor. Carries every major section band; pure white is reserved for cards floating over it.
+- **Surface** (`{colors.surface}` — #ffffff) — frequency 197. Used as text (91), bg (23), border (83). Pure white — reserved for feature chips, testimonial cards, the form input fill, and the "Try for free" button text. Never used as the page floor.
