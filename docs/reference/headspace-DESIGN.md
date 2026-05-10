@@ -310,3 +310,64 @@ Type runs **Headspace Apercu** alone — display, body, navigation, captions, bu
 ### Surface
 - **Canvas** (`{colors.canvas}` — #f9f4f2) — frequency 27. Used as bg (27). The warm off-white page floor. Carries every major section band; pure white is reserved for cards floating over it.
 - **Surface** (`{colors.surface}` — #ffffff) — frequency 197. Used as text (91), bg (23), border (83). Pure white — reserved for feature chips, testimonial cards, the form input fill, and the "Try for free" button text. Never used as the page floor.
+
+### Ink & Body
+- **Ink** (`{colors.ink}` — #2d2c2b) — frequency 309. Used as text (151), bg (9), border (149). The signature warm charcoal. Every h1, h2, h3, and body paragraph renders in this tone — the dominant ink color on the page.
+- **Ink Strong** (`{colors.ink-strong}` — #141313) — frequency 1. Used as shadow (1). The near-black used inside the rare drop-shadow stack on the "Chat with Ebb" pill.
+- **Ink Soft** (`{colors.ink-soft}` — #44423f) — frequency 292. Used as text (148), bg (7), border (134). A slightly graphite charcoal for secondary running text — fine-print disclaimers and footer copy.
+- **Ink Muted** (`{colors.ink-muted}` — #4b4c4d) — frequency 911. Used as text (459), border (452). The workhorse mid-gray that appears across nav links, body meta, and hairline borders — the highest-count token in the extraction.
+- **Ink Meta** (`{colors.ink-meta}` — #63605d) — frequency 8. Used as text (4), border (4). The dimmest tier — reserved for tertiary meta labels like "Member on processing through their feelings".
+
+### Hairlines
+- **Hairline** (`{colors.hairline}` — #e2ded9) — frequency 6. Used as border (6). The default 1px warm-gray hairline on feature chips, testimonial cards, and FAQ row dividers.
+- **Hairline Cool** (`{colors.hairline-cool}` — #d2d5de) — frequency 1. Used as border (1). The slightly cooler hairline reserved for the subscription form's text input — the only cool-spectrum border in the system.
+
+### Mascot Orbs
+- **Orb Saffron** (`{colors.orb-saffron}` — #ffce00) — frequency 4. Used as bg (4). The yellow character orb — anchors the "Always-there support" feature panel and the top-of-page banner ribbon.
+- **Orb Pink** (`{colors.orb-pink}` — #ffa1cc) — frequency 1. Used as bg (1). The pink character orb — appears once in the hero mascot cluster.
+- **Orb Aqua** (`{colors.orb-aqua}` — #00a4ff) — frequency 1. Used as bg (1). The aqua character orb — appears once in the feature-chip row ("Manage anxiety").
+- **Orb Grass** (`{colors.orb-grass}` — #02873e) — frequency 1. Used as bg (1). The grass-green character orb — appears once in the mascot constellation above the testimonial band.
+- **Orb Ultraviolet** (`{colors.orb-ultraviolet}` — #3b197f) — frequency 1. Used as bg (1). The deep-purple character orb — the rarest of the five, appearing once as a contrasting weight in the top mascot cluster.
+
+### On-Color
+- **On Primary** (`{colors.on-primary}` — #ffffff) — white text inside the blue CTA pill and the dark "Chat with Ebb" pill.
+- **On Canvas** (`{colors.on-canvas}` — #000000) — frequency 5. Used as text (3), border (2). Reserved exclusively for value text inside the email subscription input — the only place pure black appears in the system.
+
+## Typography
+
+### Font Family
+The system runs **Headspace Apercu** for everything — display, body, navigation, captions, button labels, footer links. There is no separate display family, no italic family, and no monospace family. Apercu is a Swiss humanist sans by Colophon Foundry; Headspace's custom cut tightens the apertures and adds a slightly wider 'o' counter, which keeps the 64px hero from feeling architectural.
+
+### Hierarchy
+
+| Token | Size | Weight | Line Height | Use |
+|---|---|---|---|---|
+| `{typography.display-xl}` | 64px | 700 | 1 | Hero h2 ("Members are enjoying happier and healthier lives") |
+| `{typography.display-lg}` | 52px | 700 | 1.1 | Section h2 ("all with Headspace") |
+| `{typography.display-md}` | 40px | 700 | 1.15 | Mid-page h2 / h3 ("Over 4,000 leading organizations choose Headspace") |
+| `{typography.display-sm}` | 32px | 700 | 1.2 | Sub-section h2 / h5 ("Sleep better", "The mental health app for every moment") |
+| `{typography.heading-md}` | 32px | 500 | 1.2 | Heading sub-variant for softer section titles |
+| `{typography.heading-sm}` | 24px | 700 | 1.33 | Feature card titles ("Mental health app with expert-led meditations and tools") |
+| `{typography.body-lg}` | 24px | 400 | 1.2 | Lead paragraph beneath hero h2 |
+| `{typography.body-md}` | 20px | 400 | 1.5 | Default body — testimonial copy, feature descriptions |
+| `{typography.body-sm}` | 18px | 500 | 1.44 | Banner-link copy, secondary section labels |
+| `{typography.body-xs}` | 16px | 400 | 1.5 | Nav meta, form labels, footer running text |
+| `{typography.button-md}` | 14px | 700 | 1.1 | Primary CTA pill label ("Try for free"), secondary outline labels |
+| `{typography.caption}` | 12px | 500 | 1.15 | Top-bar meta links, copyright lines, fine-print disclaimers |
+
+### Principles
+**Weight-light display**: Headspace's display hierarchy lives almost entirely at weight 700 — the 64px hero, the 52px section h2, the 40px enterprise band, and the 32px sub-section heads all run weight 700 with negative letter-spacing (-0.96px to -1.92px). Where most marketing systems use a 600 → 700 ladder to separate display tiers, Headspace flattens that to a single weight and lets size + tracking do the work. The slight tracking compression on the largest sizes (-1.92px on 64px ≈ -3% of em) keeps the heavy weight from blowing out the page's open rhythm.
+
+The single sub-display moment at weight 500 is `{typography.heading-md}` (32px / 500) — a softer header treatment reserved for testimonial section titles where the weight 700 would feel evangelistic.
+
+### Note on Font Substitutes
+If Headspace Apercu is unavailable, **Inter** is the closest open-source substitute. Bump line-heights up by ~5% and tighten letter-spacing slightly on display sizes (~-2% of em on 40px+) to approximate Apercu's wider counters and the brand's tracked-display feel.
+
+## Layout
+
+### Spacing System
+- **Base unit:** 4px (with 6px and 8px modal steps).
+- **Tokens:** `{spacing.xxs}` 4px · `{spacing.xs}` 6px · `{spacing.sm}` 8px · `{spacing.md}` 12px · `{spacing.base}` 16px · `{spacing.lg}` 24px · `{spacing.xl}` 32px · `{spacing.2xl}` 48px.
+- **Section padding (vertical):** `{spacing.2xl}` (48px, frequency 5) between major bands — hero → feature chip row → orb-tile carousel → testimonial → enterprise band → FAQ rhythm.
+- **Card internal padding:** `{spacing.lg}` (24px) on testimonial cards and FAQ rows; a 24px 19.2px 32px composite on orb tiles (frequency 7); 16px on feature chips.
+- **Gutters:** `{spacing.xxs}` (4px, frequency 47) between inline icon and label pairs — the highest-frequency spacing in the extraction.
