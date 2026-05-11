@@ -371,3 +371,71 @@ If Headspace Apercu is unavailable, **Inter** is the closest open-source substit
 - **Section padding (vertical):** `{spacing.2xl}` (48px, frequency 5) between major bands — hero → feature chip row → orb-tile carousel → testimonial → enterprise band → FAQ rhythm.
 - **Card internal padding:** `{spacing.lg}` (24px) on testimonial cards and FAQ rows; a 24px 19.2px 32px composite on orb tiles (frequency 7); 16px on feature chips.
 - **Gutters:** `{spacing.xxs}` (4px, frequency 47) between inline icon and label pairs — the highest-frequency spacing in the extraction.
+
+### Grid & Container
+- **Max content width:** ~1280px centered on the homepage.
+- **Hero band:** centered single-column composition. A small saffron banner ribbon sits at the very top ("Take a Global Deep Breath on May 13th"); below it the Headspace wordmark and product menu sit flush left, account utilities flush right, with the "Try for free" pill anchoring the right edge.
+- **Feature-chip row:** 3-column grid at desktop with each white-on-white chip housing a label ("Stress less", "Sleep soundly", "Manage anxiety", "Process thoughts", "Practice meditation", "Start therapy"), an orb icon, and a 1px hairline border.
+- **Orb-tile carousel:** a horizontal scroll of large rounded tiles, the first one a saffron-yellow panel housing the "Always-there support" feature with a pink mascot orb and an inline "Chat with Ebb" dark pill.
+- **Testimonial grid:** 3-column white card row with each card carrying a 5-star icon header, a multi-line review excerpt, and a member-name label in `{typography.caption}`.
+- **Enterprise band:** single-column blue card-band (#0061ef on cream) carrying the 40px / weight-700 headline "Over 4,000 leading organizations choose Headspace" plus paired CTAs ("Request a demo", "Learn more").
+
+### Whitespace Philosophy
+The system gives feature chip rows 4px-tight inline gutters but pads major bands at 48px vertical breathing room. The contrast reinforces the brand's voice: dense, friendly UI at the chip scale; generous, contemplative breathing room at the section scale. Headspace pads the page where the brand is most emotional, and compresses it where the page is most utilitarian.
+
+## Elevation
+
+The system has **no shadow tier** in the body chrome — every card, every nav surface, every button sits flat against the cream canvas. Depth comes from color separation (white card on cream, blue band on cream, dark "Chat with Ebb" pill on saffron orb tile) and from 16/24px corner rounding.
+
+- **Flat (no shadow):** ~99% of surfaces. Feature chips, testimonial cards, FAQ rows, top nav, footer — every component renders without a box-shadow.
+- **Single shadow exception:** the "Chat with Ebb" dark pill on the saffron orb tile carries a single near-black drop shadow at `{colors.ink-strong}` (#141313, frequency 1) — the only shadow token in the entire extraction. It reads as a press-state lift on a tactile button rather than as ambient elevation.
+
+**Flat-as-warmth**: Where most wellness systems reach for soft drop-shadows to signal pillowy comfort, Headspace argues — through its chrome — that warmth comes from cream canvas and warm-charcoal type, not from softening every surface with a 12px shadow blur. The flatness lets the mascot orbs carry the brand's atmosphere instead.
+
+## Shapes
+
+The corner-radius scale is narrow but the jumps between tiers are dramatic: **five radii cover every interactive surface**.
+
+- **8px** (`{rounded.sm}`) — frequency 7. Reserved for the text input on the subscription form — the only small-radius surface in the system.
+- **16px** (`{rounded.md}`) — frequency 24. The house radius. Feature chips, testimonial cards, image plates, and FAQ surfaces.
+- **24px** (`{rounded.lg}`) — frequency 12. Larger feature plates and the enterprise band. The first geometric tier where rounding starts to read as "card with attitude" rather than "soft rectangle".
+- **32px** (`{rounded.xl}`) — frequency 18. The primary CTA radius. Soft enough to read friendly, sharp enough to keep its UI button identity. Reserved exclusively for the "Try for free" pill and a few inline orbs.
+- **800px** (`{rounded.full}`) — frequency 4. Fully-pill geometry. Reserved for secondary outline buttons ("Check your coverage", "Learn more") and the dark "Chat with Ebb" pill. The clearest CTA-hierarchy signal in the system: primary CTAs at 32px (`{rounded.xl}`), secondary CTAs at 800px (`{rounded.full}`).
+
+There is no 4px radius, no 12px radius, and no 20px radius. The system collapses the conventional scale into five tiers where the jumps (8 → 16 → 24 → 32 → 800) are large enough that geometry alone signals component role.
+
+## Components
+
+### Buttons
+
+**`button-primary`** — Blue pill (`{colors.primary}` — #0061ef), white text, 32px radius (`{rounded.xl}`), 14.3×24px padding, 48px height, weight 700, 14px label. The single voltage moment on the page — "Try for free", "Get started". No secondary blue exists.
+
+**`button-primary-hover`** — Press state shifts the fill toward `{colors.primary-deep}` (#0000ee). No transform, no shadow change.
+
+**`button-secondary`** — White fill, warm-charcoal text, 1px warm-charcoal hairline (`{colors.ink}` — #2d2c2b), 800px fully-pill radius. Used for inverse CTAs ("Check your coverage", "Learn more"). The radius difference (`{rounded.full}` vs. `{rounded.xl}`) is the system's clearest CTA-hierarchy signal.
+
+**`button-dark-pill`** — Warm-charcoal fill (`{colors.ink}`), white text, 800px radius, 8×16×8×24px asymmetric padding. The signature inline pill ("Chat with Ebb") that anchors the saffron orb-tile feature panel — the only place a dark fill button appears.
+
+**`button-tertiary-text`** — Plain warm-charcoal text in `{typography.caption}`, no surface, no border. Used for inline footer links and top-bar copyright meta.
+
+### Top Navigation
+
+**`top-nav`** — Cream surface (`{colors.canvas}`), 64px height, 16×24px padding, no bottom hairline. The Headspace wordmark and orb logomark sit flush left; the product menu items ("For You", "For Business", "For Providers", "Our Plans", "Resources", "About") sit center; account utilities ("Log In", "Help", "Try for free") sit flush right.
+
+**`nav-link`** — Plain warm-charcoal text in `{typography.body-xs}` (16px / 400). No pill background, no underline, no hover-surface fill on the static page — hover state is reserved to the live product, not the marketing scroll.
+
+### Hero
+
+**`hero-headline`** — The 64px / weight-700 / -1.92px-tracked h2 ("Members are enjoying happier and healthier lives") in warm charcoal. Sits over the cream canvas with mascot orbs (pink, aqua, grass, ultraviolet) floating around it as a constellation rather than as a photograph.
+
+**`hero-subhead`** — 18px / 500 / -0.18px-tracked paragraph in warm charcoal ("Take a Global Deep Breath on May 13th") sitting inside the top saffron banner ribbon as a date-specific event prompt.
+
+### Cards & Tiles
+
+**`feature-chip`** — White surface, warm-charcoal text, 16px radius (`{rounded.md}`), 16px padding, 56px height, 1px hairline (`{colors.hairline}`) border. Houses a label + orb icon pair — six of them stack in a 3×2 grid above the orb-tile carousel.
+
+**`orb-tile`** — Saffron-yellow surface (`{colors.orb-saffron}`), warm-charcoal text, 24px radius (`{rounded.lg}`), 24×19.2×32px composite padding. The signature feature panel — houses a chat-bubble illustration, a 24px / 700 title ("Always-there support"), a body paragraph in `{typography.body-md}`, and the inline dark "Chat with Ebb" pill. The page's only saturated-color surface band aside from the blue enterprise band.
+
+**`testimonial-card`** — White surface, warm-charcoal text, 16px radius, 24px padding, 1px hairline (`{colors.hairline}`) border. Houses a member-quote in `{typography.body-md}` plus a member-name label in `{typography.caption}` ("Member on forming new helpful habits").
+
+**`enterprise-band`** — Blue surface (`{colors.primary}` — #0061ef), white text, 24px radius (`{rounded.lg}`), 48px padding. The mid-scroll anchor: houses the 40px / weight-700 enterprise headline plus paired "Request a demo" and "Learn more" CTAs. The only band that uses the primary blue as a surface fill.
