@@ -439,3 +439,63 @@ There is no 4px radius, no 12px radius, and no 20px radius. The system collapses
 **`testimonial-card`** — White surface, warm-charcoal text, 16px radius, 24px padding, 1px hairline (`{colors.hairline}`) border. Houses a member-quote in `{typography.body-md}` plus a member-name label in `{typography.caption}` ("Member on forming new helpful habits").
 
 **`enterprise-band`** — Blue surface (`{colors.primary}` — #0061ef), white text, 24px radius (`{rounded.lg}`), 48px padding. The mid-scroll anchor: houses the 40px / weight-700 enterprise headline plus paired "Request a demo" and "Learn more" CTAs. The only band that uses the primary blue as a surface fill.
+
+### Forms
+
+**`text-input`** — White surface, 1px cool hairline (`{colors.hairline-cool}` — #d2d5de), 8px radius (`{rounded.sm}`), 58px height, 24×16×8px asymmetric padding (extra top padding for the floating label). Placeholder and value text run pure black (`{colors.on-canvas}`) at 16px / weight 400 — the one place black appears in the system.
+
+### FAQ
+
+**`faq-row`** — Cream surface (no card fill), 24px vertical padding, 24px / weight-700 question title in warm charcoal. Rows are separated by 1px `{colors.hairline}` dividers rather than card-rounded surfaces — the rhythm reads as editorial rather than as expandable accordion buttons.
+
+### Banner & Footer
+
+**`banner-link`** — Saffron surface (`{colors.orb-saffron}`), warm-charcoal text in `{typography.caption}`, 32px height, 8×16px padding. The top-of-page ribbon ("Take a Global Deep Breath on May 13th") that anchors every scroll.
+
+**`footer-band`** — Cream surface (`{colors.canvas}`), warm-charcoal text in `{typography.body-xs}` (16px / 400), 48×24px padding. The footer reuses the page-canvas color rather than dropping into a dark band — Headspace's restraint extends to the bottom of the scroll.
+
+## Responsive Behavior
+
+| Name | Width | Key Changes |
+|---|---|---|
+| Mobile | < 744px | Top nav collapses to wordmark + hamburger; product menu hides behind a sheet; hero h2 drops to 40px / 700; feature chip grid stacks 1-up; orb-tile carousel becomes a horizontal swipe; enterprise band stacks the CTA pair vertically. |
+| Tablet | 744–1128px | Top nav keeps wordmark + a 2-item menu (Plans, Try for free); hero h2 drops to 52px / 700; feature chips 2-up; testimonial cards 2-up. |
+| Desktop | 1128–1440px | Full top nav with 6 menu items centered; hero h2 at full 64px / 700; feature chips 3×2 grid; testimonial cards 3-up; enterprise band horizontal CTAs. |
+| Wide | > 1440px | Content width caps at 1280px; outer margins absorb the rest of the cream canvas. |
+
+### Touch Targets
+- Primary CTA pill at 48px height — comfortably above WCAG AAA.
+- Secondary outline pill at 48px height with 12.1×24px internal padding.
+- Feature chip at 56px height — generous tap area for the 6-item grid above the orb carousel.
+
+### Collapsing Strategy
+- Top product menu collapses into a hamburger sheet below 744px.
+- Hero h2 scales 64 → 52 → 40px across breakpoints; weight stays at 700; letter-spacing scales linearly.
+- Feature chip and testimonial grids drop column counts cleanly at each breakpoint — never reflow rows; always reduce columns.
+- Orb-tile carousel transitions from a paginated horizontal track on desktop to a free-swipe scroll on mobile.
+
+## Do's and Don'ts
+
+### Do
+- Use `{colors.ink}` (#2d2c2b) for every h1, h2, h3, and body paragraph. The warm charcoal is the system's identity — pure black on headlines breaks the brand's warmth.
+- Reserve `{colors.primary}` (#0061ef) for the primary CTA pill and the enterprise band only. The blue is the single voltage; a second blue band breaks the moment-per-scroll rhythm.
+- Use 32px radius (`{rounded.xl}`) on the primary CTA, 800px (`{rounded.full}`) on secondary outline pills. The radius difference is the system's hierarchy signal.
+- Use the five mascot orbs (`{colors.orb-saffron}` / `{colors.orb-pink}` / `{colors.orb-aqua}` / `{colors.orb-grass}` / `{colors.orb-ultraviolet}`) as the decoration layer. They replace stock photography, mesh, and atmospheric backgrounds entirely.
+- Stay inside three Apercu weights (400 / 500 / 700). Weight 600, weight 800, and italic are not part of the system.
+
+### Do not
+- Do not use `{colors.surface}` (#ffffff) as the page floor — pure white is reserved for cards and form inputs floating over the cream canvas. The page floor is `{colors.canvas}` (#f9f4f2). Swapping them flattens the warmth that defines the brand.
+- Do not use `{colors.on-canvas}` (#000000) for body text or headlines. Despite its appearance in the palette, it is scoped exclusively to value text inside the subscription form input (5 occurrences total). Use `{colors.ink}` for everything readable.
+- Do not add a second saturated CTA color (orange, green, magenta). The blue voltage is the only saturated fill in the system; adding a second breaks the single-moment-per-page rule and dilutes the "Try for free" pill's identity.
+- Do not add box-shadows to feature chips, testimonial cards, or the enterprise band. The system is flat-as-warmth — depth comes from color separation and 16/24px corner rounding, never from elevation. The single shadow exception is the "Chat with Ebb" pill on the saffron orb tile, and only there.
+- Do not use the 800px fully-pill radius (`{rounded.full}`) on the primary CTA. The 32px (`{rounded.xl}`) primary vs. 800px (`{rounded.full}`) secondary distinction is the brand's load-bearing hierarchy cue; collapsing them makes both pills read as the same role.
+- Do not use 12px or 20px corner radii anywhere. The system steps 8 → 16 → 24 → 32 → 800px; intermediate values read as off-brand. Pick the closest tier.
+
+## Known Gaps
+
+- **Hover state colors:** the marketing surface has no visible nav-link hover or card-hover state in the static extraction; the live product carries those but they are not captured here.
+- **Loading states / skeleton screens:** not visible on the extracted marketing surface.
+- **In-app product UI:** the iOS, Android, and web meditation player, the sleep-story tracks, and the therapist-matching flow live inside the authenticated product; this spec captures the marketing site only.
+- **Form input error states:** the subscription text-input outline (`{colors.hairline-cool}`) is documented, but the helper-text + outline combination on validation failure was not visible in the captured surface.
+- **Dark mode:** the marketing site is light-only; a native dark mode exists in the iOS and Android apps but is not represented in this DESIGN.md.
+- **Motion:** the saffron banner ticker, mascot-orb float easing, and orb-tile carousel transition curves are not captured as tokens.
