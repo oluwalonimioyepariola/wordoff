@@ -42,3 +42,18 @@ export function createRng(seed: string | number): Rng {
     chance: (probability) => next() < probability,
   };
 }
+
+/** Fisher–Yates shuffle into a new array. */
+export function shuffled<T>(items: readonly T[], rng: Rng): T[] {
+  const out = items.slice();
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(rng.next() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+/** A fresh, unpredictable seed for non-daily games. */
+export function randomSeed(): string {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
