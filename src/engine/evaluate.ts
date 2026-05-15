@@ -26,3 +26,36 @@ export function scoreGuess(guess: string, answer: string): Mark[] {
   }
   return marks;
 }
+
+/**
+ * Same result as scoreGuess, packed into one base-3 number (0..242).
+ * The solver calls this hundreds of thousands of times, so it avoids arrays.
+ */
+export function patternCode(guess: string, answer: string): number {
+  let code = 0;
+  let used = 0; // bitmask of answer positions already claimed
+  let greens = 0;
+  for (let i = 0; i < WORD_LENGTH; i++) {
+    if (guess.charCodeAt(i) === answer.charCodeAt(i)) {
+      greens |= 1 << i;
+      used |= 1 << i;
+    }
+  }
+  for (let i = 0; i < WORD_LENGTH; i++) {
+    let digit = 0;
+    if (greens & (1 << i)) {
+      digit = 2;
+    } else {
+      const c = guess.charCodeAt(i);
+      for (let j = 0; j < WORD_LENGTH; j++) {
+        if (!(used & (1 << j)) && answer.charCodeAt(j) === c) {
+          used |= 1 << j;
+          digit = 1;
+          break;
+        }
+      }
+    }
+    code = code * 3 + digit;
+  }
+  return code;
+}
