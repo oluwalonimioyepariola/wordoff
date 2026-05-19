@@ -59,3 +59,11 @@ export function patternCode(guess: string, answer: string): number {
   }
   return code;
 }
+
+export function marksToCode(marks: readonly Mark[]): number {
+  return marks.reduce((code, m) => code * 3 + (m === 'correct' ? 2 : m === 'present' ? 1 : 0), 0);
+}
+
+export function isSolved(marks: readonly Mark[] | null | undefined): boolean {
+  return !!marks && marks.length === WORD_LENGTH && marks.every((m) => m === 'correct');
+}
