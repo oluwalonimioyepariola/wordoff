@@ -67,3 +67,28 @@ export function marksToCode(marks: readonly Mark[]): number {
 export function isSolved(marks: readonly Mark[] | null | undefined): boolean {
   return !!marks && marks.length === WORD_LENGTH && marks.every((m) => m === 'correct');
 }
+
+const RANK: Record<Mark, number> = { absent: 0, present: 1, correct: 2 };
+
+/** Best known mark per letter, for coloring the on-screen keyboard. */
+export function keyboardMarks(history: readonly ScoredGuess[]): Record<string, Mark> {
+  const keys: Record<string, Mark> = {};
+  for (const { guess, marks } of history) {
+    for (let i = 0; i < guess.length; i++) {
+      const prev = keys[guess[i]];
+      if (!prev || RANK[marks[i]] > RANK[prev]) keys[guess[i]] = marks[i];
+    }
+  }
+  return keys;
+}
+
+/** How many greens and yellows a row scored, used for taunts and "pressure". */
+export function rowStrength(marks: readonly Mark[]): { greens: number; yellows: number } {
+  let greens = 0;
+  let yellows = 0;
+  for (const m of marks) {
+    if (m === 'correct') greens++;
+    else if (m === 'present') yellows++;
+  }
+  return { greens, yellows };
+}
