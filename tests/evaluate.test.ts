@@ -53,3 +53,15 @@ describe('scoreGuess', () => {
     assert.ok(!isSolved(null));
   });
 });
+
+describe('keyboardMarks', () => {
+  it('keeps the best mark seen per letter', () => {
+    const keys = keyboardMarks([
+      { guess: 'react', marks: scoreGuess('react', 'crane') },
+      { guess: 'crane', marks: scoreGuess('crane', 'crane') },
+    ]);
+    assert.equal(keys.r, 'correct');
+    assert.equal(keys.t, 'absent');
+    assert.equal(keys.e, 'correct');
+  });
+});
