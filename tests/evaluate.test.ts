@@ -65,3 +65,34 @@ describe('keyboardMarks', () => {
     assert.equal(keys.e, 'correct');
   });
 });
+
+describe('word lists', () => {
+  it('accepts answers and extra guesses, rejects junk', () => {
+    assert.ok(isAcceptedWord('crane'));
+    assert.ok(isAcceptedWord('CRANE'));
+    assert.ok(isAcceptedWord('aahed') || isAcceptedWord('zymic') || isAcceptedWord('abaca'));
+    assert.ok(!isAcceptedWord('xqzvb'));
+  });
+
+  it('has only unique 5-letter answers', () => {
+    assert.ok(ANSWERS.length > 900);
+    assert.equal(new Set(ANSWERS).size, ANSWERS.length);
+    assert.ok(ANSWERS.every((w) => /^[a-z]{5}$/.test(w)));
+  });
+});
+
+describe('hardModeViolation', () => {
+  const history = [{ guess: 'slate', marks: scoreGuess('slate', 'crane') }]; // ..G.G
+  it('requires greens to stay in place', () => {
+    assert.match(hardModeViolation('brick', history) ?? '', /3rd letter must be A/);
+  });
+  it('requires revealed letters to be reused', () => {
+    assert.equal(hardModeViolation('crane', history), null);
+    assert.match(hardModeViolation('quart', history) ?? '', /must be/);
+  });
+  it('requires yellows to be included', () => {
+    const h = [{ guess: 'react', marks: scoreGuess('react', 'crane') }]; // YYGY.
+    assert.match(hardModeViolation('bland', h) ?? '', /contain R|contain E|contain C/);
+    assert.equal(hardModeViolation('crane', h), null);
+  });
+});
