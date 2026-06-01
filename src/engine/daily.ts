@@ -23,3 +23,28 @@ const EPOCH_INDEX = Math.floor(
 export function dayNumber(date: Date = new Date()): number {
   return localDayIndex(date) - EPOCH_INDEX + 1;
 }
+
+/** Stable key for storing a day's result, e.g. "2026-10-17". */
+export function dayKey(date: Date = new Date()): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+export function dateForDayNumber(n: number): Date {
+  const utc = new Date((EPOCH_INDEX + n - 1) * MS_PER_DAY);
+  return new Date(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate());
+}
+
+let order: string[] | null = null;
+
+/**
+ * The answer for a given puzzle number. Answers come from a fixed seeded
+ * shuffle so the order isn't alphabetical, and every player gets the same word.
+ */
+export function dailyAnswer(n: number): string {
+  if (!order) order = shuffled(ANSWERS, createRng('wordoff-daily-v1'));
+  const i = (((n - 1) % order.length) + order.length) % order.length;
+  return order[i];
+}
