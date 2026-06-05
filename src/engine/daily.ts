@@ -48,3 +48,28 @@ export function dailyAnswer(n: number): string {
   const i = (((n - 1) % order.length) + order.length) % order.length;
   return order[i];
 }
+
+const ROTATION: OpponentId[] = ['rookie', 'gunslinger', 'sheriff'];
+
+/** The daily rival rotates so everyone faces the same opponent on the same day. */
+export function dailyOpponent(n: number): OpponentId {
+  return ROTATION[(((n - 1) % ROTATION.length) + ROTATION.length) % ROTATION.length];
+}
+
+/** Seed for the daily AI so its guesses and timing are the same for everyone. */
+export function dailySeed(n: number): string {
+  return `daily-${n}`;
+}
+
+export function msUntilNextDay(now: Date = new Date()): number {
+  const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  return next.getTime() - now.getTime();
+}
+
+export function formatCountdown(ms: number): string {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  return [h, m, s].map((v) => String(v).padStart(2, '0')).join(':');
+}
