@@ -50,3 +50,23 @@ export function expectedInformation(guess: string, candidates: readonly string[]
   }
   return bits;
 }
+
+/**
+ * Picks the guess that best splits the remaining candidates. Words that could
+ * themselves be the answer get a small bonus, since they might win outright.
+ */
+export function bestInformationGuess(candidates: readonly string[], pool: readonly string[]): string {
+  if (candidates.length === 0) throw new Error('No candidates left');
+  if (candidates.length <= 2) return candidates[0];
+  const isCandidate = new Set(candidates);
+  let best = candidates[0];
+  let bestScore = -Infinity;
+  for (const guess of pool) {
+    const score = expectedInformation(guess, candidates) + (isCandidate.has(guess) ? 1 / candidates.length : 0);
+    if (score > bestScore) {
+      bestScore = score;
+      best = guess;
+    }
+  }
+  return best;
+}
