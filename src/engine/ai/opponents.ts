@@ -93,3 +93,9 @@ export const OPPONENTS: Record<OpponentId, OpponentProfile> = {
     },
   },
 };
+
+export const OPPONENT_ORDER: OpponentId[] = ['rookie', 'gunslinger', 'sheriff'];
+
+export function getOpponent(id: OpponentId): OpponentProfile {
+  return OPPONENTS[id];
+}
