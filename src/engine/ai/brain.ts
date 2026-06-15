@@ -65,3 +65,10 @@ export function createBrain(opponent: OpponentId, seed: string): AiBrain {
     thinkTimeMs: (round) => roundRng(round, 'think').int(profile.thinkMs.min, profile.thinkMs.max),
   };
 }
+
+function informationGuess(candidates: string[], rng: Rng): string {
+  if (candidates.length <= 2) return candidates[0];
+  const probes = shuffled(ANSWERS, rng).slice(0, PROBE_SAMPLE);
+  const pool = Array.from(new Set([...candidates, ...probes]));
+  return bestInformationGuess(candidates, pool);
+}
