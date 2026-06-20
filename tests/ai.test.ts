@@ -27,3 +27,5 @@ function solo(opponent: OpponentId, answer: string, seed: string, maxRows = 10):
   }
   return history.map((h) => h.guess);
 }
+
+const sample = shuffled(ANSWERS, createRng('ai-sample')).slice(0, 150);
