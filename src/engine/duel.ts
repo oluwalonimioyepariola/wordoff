@@ -26,3 +26,36 @@ import { isAcceptedWord, normalizeWord } from './words';
  *   and each gets one final shot.
  * - An empty shot clock fires a blank: the row is spent with no guess.
  */
+
+export interface DuelConfig {
+  answer: string;
+  opponent: OpponentId;
+  mode: DuelMode;
+  hardMode: boolean;
+  /** Per-guess time limit, or null for no shot clock. */
+  shotClockMs: number | null;
+  /** Seeds the AI and the sudden-death hint. */
+  seed: string;
+  dayNumber?: number;
+}
+
+export interface DuelRow {
+  /** null when the shot clock ran out (a blank). */
+  guess: string | null;
+  marks: Mark[] | null;
+  timeMs: number;
+}
+
+export interface Board {
+  rows: DuelRow[];
+  totalMs: number;
+  /** 1-based row the player solved on, or null. */
+  solvedRow: number | null;
+}
+
+export type OutcomeReason =
+  | 'solved' // only one player solved
+  | 'photo-finish' // both solved on the same row; decided on time
+  | 'dead-heat' // both solved on the same row with identical time
+  | 'exhausted' // nobody solved, even in sudden death
+  | 'forfeit';
