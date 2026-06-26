@@ -59,3 +59,37 @@ export type OutcomeReason =
   | 'dead-heat' // both solved on the same row with identical time
   | 'exhausted' // nobody solved, even in sudden death
   | 'forfeit';
+
+export interface DuelOutcome {
+  winner: PlayerId | null;
+  reason: OutcomeReason;
+  rounds: number;
+  suddenDeath: boolean;
+  forfeitedBy?: PlayerId;
+}
+
+export interface RoundReveal {
+  round: number;
+  you: DuelRow;
+  ai: DuelRow;
+}
+
+export interface DuelState {
+  config: DuelConfig;
+  /** 0-based index of the round being played. */
+  round: number;
+  maxRows: number;
+  suddenDeath: boolean;
+  hint: SuddenDeathHint | null;
+  boards: Record<PlayerId, Board>;
+  /** Guesses locked in for the current round, not yet revealed. */
+  locked: Partial<Record<PlayerId, DuelRow>>;
+  lastReveal: RoundReveal | null;
+  outcome: DuelOutcome | null;
+}
+
+export type GuessCheck =
+  | { ok: true; guess: string }
+  | { ok: false; reason: 'length' | 'not-a-word' | 'hard-mode' | 'repeat'; message: string };
+
+const emptyBoard = (): Board => ({ rows: [], totalMs: 0, solvedRow: null });
