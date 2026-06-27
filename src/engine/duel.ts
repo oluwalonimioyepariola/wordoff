@@ -131,3 +131,33 @@ export function validateGuess(state: DuelState, player: PlayerId, input: string)
   }
   return { ok: true, guess };
 }
+
+export function canLockIn(state: DuelState, player: PlayerId): boolean {
+  return !state.outcome && !state.locked[player];
+}
+
+/**
+ * Locks in a player's shot for this round. Pass `null` for a blank (shot
+ * clock expired). When both players are locked, the round resolves.
+ */
+export function lockIn(state: DuelState, player: PlayerId, guess: string | null, timeMs: number): DuelState {
+  if (state.outcome) throw new Error('The standoff is over');
+  if (state.locked[player]) throw new Error(`${player} already locked in this round`);
+
+  let word: string | null = null;
+  if (guess !== null) {
+    const check = validateGuess(state, player, guess);
+    if (!check.ok) throw new Error(check.message);
+    word = check.guess;
+  }
+
+  const next: DuelState = {
+    ...state,
+    locked: { ...state.locked, [player]: { guess: word, marks: null, timeMs: Math.max(0, timeMs) } },
+  };
+  return next.locked.you && next.locked.ai ? resolveRound(next) : next;
+}
+
+function scoreRow(row: DuelRow, answer: string): DuelRow {
+  return row.guess ? { ...row, marks: scoreGuess(row.guess, answer) } : row;
+}
