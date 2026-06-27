@@ -161,3 +161,54 @@ export function lockIn(state: DuelState, player: PlayerId, guess: string | null,
 function scoreRow(row: DuelRow, answer: string): DuelRow {
   return row.guess ? { ...row, marks: scoreGuess(row.guess, answer) } : row;
 }
+
+function addRow(board: Board, row: DuelRow, rowNumber: number): Board {
+  return {
+    rows: [...board.rows, row],
+    totalMs: board.totalMs + row.timeMs,
+    solvedRow: board.solvedRow ?? (isSolved(row.marks) ? rowNumber : null),
+  };
+}
+
+function resolveRound(state: DuelState): DuelState {
+  const { answer } = state.config;
+  const you = scoreRow(state.locked.you!, answer);
+  const ai = scoreRow(state.locked.ai!, answer);
+  const rowNumber = state.round + 1;
+
+  const boards = {
+    you: addRow(state.boards.you, you, rowNumber),
+    ai: addRow(state.boards.ai, ai, rowNumber),
+  };
+  const base: DuelState = {
+    ...state,
+    boards,
+    locked: {},
+    lastReveal: { round: state.round, you, ai },
+  };
+
+  const youSolved = isSolved(you.marks);
+  const aiSolved = isSolved(ai.marks);
+  const end = (winner: PlayerId | null, reason: OutcomeReason): DuelState => ({
+    ...base,
+    outcome: { winner, reason, rounds: rowNumber, suddenDeath: state.suddenDeath },
+  });
+
+  if (youSolved && aiSolved) {
+    if (boards.you.totalMs === boards.ai.totalMs) return end(null, 'dead-heat');
+    return end(boards.you.totalMs < boards.ai.totalMs ? 'you' : 'ai', 'photo-finish');
+  }
+  if (youSolved) return end('you', 'solved');
+  if (aiSolved) return end('ai', 'solved');
+
+  if (rowNumber < state.maxRows) return { ...base, round: rowNumber };
+  if (state.suddenDeath) return end(null, 'exhausted');
+
+  return {
+    ...base,
+    round: rowNumber,
+    maxRows: state.maxRows + 1,
+    suddenDeath: true,
+    hint: pickSuddenDeathHint(base),
+  };
+}
