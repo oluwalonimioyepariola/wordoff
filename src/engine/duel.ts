@@ -93,3 +93,41 @@ export type GuessCheck =
   | { ok: false; reason: 'length' | 'not-a-word' | 'hard-mode' | 'repeat'; message: string };
 
 const emptyBoard = (): Board => ({ rows: [], totalMs: 0, solvedRow: null });
+
+export function createDuel(config: DuelConfig): DuelState {
+  return {
+    config: { ...config, answer: normalizeWord(config.answer) },
+    round: 0,
+    maxRows: MAX_ROWS,
+    suddenDeath: false,
+    hint: null,
+    boards: { you: emptyBoard(), ai: emptyBoard() },
+    locked: {},
+    lastReveal: null,
+    outcome: null,
+  };
+}
+
+/** Rows that carry a real guess, in the shape the solver and hard mode use. */
+export function scoredHistory(board: Board): ScoredGuess[] {
+  return board.rows.flatMap((r) => (r.guess && r.marks ? [{ guess: r.guess, marks: r.marks }] : []));
+}
+
+export function validateGuess(state: DuelState, player: PlayerId, input: string): GuessCheck {
+  const guess = normalizeWord(input);
+  if (guess.length !== WORD_LENGTH || !/^[a-z]+$/.test(guess)) {
+    return { ok: false, reason: 'length', message: 'Not enough letters' };
+  }
+  if (!isAcceptedWord(guess)) {
+    return { ok: false, reason: 'not-a-word', message: 'Not in word list' };
+  }
+  const history = scoredHistory(state.boards[player]);
+  if (history.some((h) => h.guess === guess)) {
+    return { ok: false, reason: 'repeat', message: 'Already fired that one' };
+  }
+  if (state.config.hardMode) {
+    const violation = hardModeViolation(guess, history);
+    if (violation) return { ok: false, reason: 'hard-mode', message: violation };
+  }
+  return { ok: true, guess };
+}
