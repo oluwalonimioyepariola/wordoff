@@ -212,3 +212,18 @@ function resolveRound(state: DuelState): DuelState {
     hint: pickSuddenDeathHint(base),
   };
 }
+
+/** Reveals a letter neither player has pinned down yet, if there is one. */
+function pickSuddenDeathHint(state: DuelState): SuddenDeathHint {
+  const { answer, seed } = state.config;
+  const known = new Set<number>();
+  for (const board of Object.values(state.boards)) {
+    for (const row of board.rows) {
+      row.marks?.forEach((m, i) => m === 'correct' && known.add(i));
+    }
+  }
+  const open = [...Array(WORD_LENGTH).keys()].filter((i) => !known.has(i));
+  const rng = createRng(`${seed}:sudden-death`);
+  const index = rng.pick(open.length ? open : [...Array(WORD_LENGTH).keys()]);
+  return { index, letter: answer[index] };
+}
