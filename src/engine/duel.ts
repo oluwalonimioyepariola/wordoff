@@ -227,3 +227,36 @@ function pickSuddenDeathHint(state: DuelState): SuddenDeathHint {
   const index = rng.pick(open.length ? open : [...Array(WORD_LENGTH).keys()]);
   return { index, letter: answer[index] };
 }
+
+export function forfeit(state: DuelState, player: PlayerId): DuelState {
+  if (state.outcome) return state;
+  return {
+    ...state,
+    locked: {},
+    outcome: {
+      winner: player === 'you' ? 'ai' : 'you',
+      reason: 'forfeit',
+      rounds: state.round,
+      suddenDeath: state.suddenDeath,
+      forfeitedBy: player,
+    },
+  };
+}
+
+export function opponentOf(player: PlayerId): PlayerId {
+  return player === 'you' ? 'ai' : 'you';
+}
+
+/** Short headline for the result screen. */
+export function outcomeHeadline(outcome: DuelOutcome): string {
+  if (outcome.reason === 'forfeit') {
+    return outcome.forfeitedBy === 'you' ? 'You walked away' : 'Your rival fled town';
+  }
+  if (outcome.winner === null) {
+    return outcome.reason === 'dead-heat' ? 'Dead heat' : 'Both left standing';
+  }
+  if (outcome.reason === 'photo-finish') {
+    return outcome.winner === 'you' ? 'Won by a hair' : 'Lost by a hair';
+  }
+  return outcome.winner === 'you' ? 'You win the standoff' : 'Shot down';
+}
