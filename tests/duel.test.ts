@@ -58,3 +58,57 @@ describe('duel: simultaneous rounds', () => {
     assert.equal(s.outcome?.reason, 'dead-heat');
   });
 });
+
+describe('duel: blanks, sudden death, forfeits', () => {
+  const misses = ['plumb', 'fight', 'dusky', 'vowel', 'jumpy', 'stock'];
+
+  it('spends the row on a blank shot', () => {
+    const s = round(createDuel(config({ shotClockMs: 30_000 })), null, 'slate', 30_000, 1000);
+    assert.equal(s.boards.you.rows[0].guess, null);
+    assert.equal(s.boards.you.rows[0].marks, null);
+    assert.equal(s.round, 1);
+  });
+
+  it('goes to sudden death after six misses, with a shared hint', () => {
+    let s = createDuel(config());
+    for (const w of misses) s = round(s, w, w);
+    assert.equal(s.outcome, null);
+    assert.equal(s.suddenDeath, true);
+    assert.equal(s.maxRows, 7);
+    assert.ok(s.hint);
+    assert.equal(s.hint!.letter, 'crane'[s.hint!.index]);
+  });
+
+  it('picks a hint position nobody has found yet', () => {
+    let s = createDuel(config());
+    const pinned = ['brine', 'drank', 'grand', 'frame', 'trade', 'shape'];
+    for (const w of pinned) s = round(s, w, w);
+    const green = new Set<number>();
+    for (const r of s.boards.you.rows) r.marks?.forEach((m, i) => m === 'correct' && green.add(i));
+    if (green.size < 5) assert.ok(!green.has(s.hint!.index));
+  });
+
+  it('ends in a draw when nobody solves in sudden death', () => {
+    let s = createDuel(config());
+    for (const w of misses) s = round(s, w, w);
+    s = round(s, 'witty', 'witty');
+    assert.equal(s.outcome?.winner, null);
+    assert.equal(s.outcome?.reason, 'exhausted');
+    assert.equal(s.outcome?.suddenDeath, true);
+  });
+
+  it('can be won in sudden death', () => {
+    let s = createDuel(config());
+    for (const w of misses) s = round(s, w, w);
+    s = round(s, 'witty', 'crane');
+    assert.equal(s.outcome?.winner, 'ai');
+    assert.equal(s.outcome?.suddenDeath, true);
+    assert.equal(s.boards.ai.solvedRow, 7);
+  });
+
+  it('forfeit hands the win to the other side', () => {
+    const s = forfeit(round(createDuel(config()), 'slate', 'trace'), 'you');
+    assert.equal(s.outcome?.winner, 'ai');
+    assert.equal(s.outcome?.reason, 'forfeit');
+  });
+});
