@@ -112,3 +112,21 @@ describe('duel: blanks, sudden death, forfeits', () => {
     assert.equal(s.outcome?.reason, 'forfeit');
   });
 });
+
+describe('duel: guess validation', () => {
+  it('rejects short, unknown, repeated, and hard-mode-breaking guesses', () => {
+    let s = createDuel(config({ hardMode: true }));
+    assert.equal(validateGuess(s, 'you', 'cra').ok, false);
+    assert.deepEqual(validateGuess(s, 'you', 'zzzzz'), { ok: false, reason: 'not-a-word', message: 'Not in word list' });
+    s = round(s, 'slate', 'trace');
+    const repeat = validateGuess(s, 'you', 'slate');
+    assert.equal(repeat.ok, false);
+    const hard = validateGuess(s, 'you', 'brick');
+    assert.equal(hard.ok || hard.reason, 'hard-mode');
+    assert.deepEqual(validateGuess(s, 'you', 'CRANE'), { ok: true, guess: 'crane' });
+  });
+
+  it('refuses to lock in an invalid word', () => {
+    assert.throws(() => lockIn(createDuel(config()), 'you', 'qqqqq', 10), /word list/);
+  });
+});
