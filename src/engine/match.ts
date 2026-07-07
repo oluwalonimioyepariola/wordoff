@@ -47,3 +47,20 @@ export function recordMatchDuel(match: MatchState, outcome: DuelOutcome): MatchS
   }
   return { ...match, scores, draws, results, winner };
 }
+
+export function isMatchOver(match: MatchState): boolean {
+  return match.winner !== undefined;
+}
+
+/** A clean sweep: won every duel without dropping one (e.g. 3–0 in a best of 5). */
+export function isSweep(match: MatchState): boolean {
+  return match.winner === 'you' && match.bestOf > 1 && match.scores.ai === 0 && match.draws === 0;
+}
+
+/** Random answer for a Quick Duel, avoiding words played recently. */
+export function pickQuickAnswer(seed: string, recent: readonly string[]): string {
+  const rng = createRng(seed);
+  const avoid = new Set(recent);
+  const fresh = ANSWERS.filter((w) => !avoid.has(w));
+  return rng.pick(fresh.length ? fresh : ANSWERS);
+}
