@@ -125,3 +125,14 @@ const RULES: Rule[] = [
     check: (s) => totalPlayed(s) >= 100,
   },
 ];
+
+export const ACHIEVEMENTS: Achievement[] = RULES.map(({ check: _check, ...a }) => a);
+
+/** IDs newly unlocked by this event (already-unlocked ones are skipped). */
+export function evaluateAchievements(stats: Stats, event: AchievementEvent): string[] {
+  return RULES.filter((r) => !stats.achievements[r.id] && r.check(stats, event)).map((r) => r.id);
+}
+
+export function getAchievement(id: string): Achievement | undefined {
+  return ACHIEVEMENTS.find((a) => a.id === id);
+}
