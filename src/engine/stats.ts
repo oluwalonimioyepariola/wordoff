@@ -21,3 +21,40 @@ export interface DailyRecord {
   yourMs: number;
   playedAt: number;
 }
+
+export interface Stats {
+  version: 1;
+  daily: WLD & {
+    played: number;
+    /** Consecutive days with a finished Daily Standoff (protected by freezes). */
+    playStreak: number;
+    bestPlayStreak: number;
+    /** Consecutive Daily Standoff wins. */
+    winStreak: number;
+    bestWinStreak: number;
+    lastDay: number | null;
+    freezes: number;
+    freezesUsed: number;
+    history: Record<number, DailyRecord>;
+  };
+  duels: WLD & { played: number; winStreak: number; bestWinStreak: number };
+  matches: WLD & { played: number; sweeps: number };
+  vs: Record<OpponentId, WLD & { streak: number; bestStreak: number }>;
+  /** Index 0–5: solved on row 1–6. Index 6: solved in sudden death. */
+  distribution: number[];
+  fastestSolveMs: number | null;
+  suddenDeathWins: number;
+  photoFinishWins: number;
+  hardModeWins: number;
+  shotClockWins: number;
+  achievements: Record<string, number>;
+  recentAnswers: string[];
+}
+
+export const MAX_FREEZES = 2;
+/** A freeze is earned every time the play streak reaches a multiple of this. */
+export const FREEZE_EVERY = 7;
+const RECENT_LIMIT = 150;
+
+const wld = (): WLD => ({ wins: 0, losses: 0, draws: 0 });
+const vsRecord = () => ({ ...wld(), streak: 0, bestStreak: 0 });
