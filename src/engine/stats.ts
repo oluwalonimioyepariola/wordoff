@@ -58,3 +58,37 @@ const RECENT_LIMIT = 150;
 
 const wld = (): WLD => ({ wins: 0, losses: 0, draws: 0 });
 const vsRecord = () => ({ ...wld(), streak: 0, bestStreak: 0 });
+
+export function createStats(): Stats {
+  return {
+    version: 1,
+    daily: {
+      ...wld(),
+      played: 0,
+      playStreak: 0,
+      bestPlayStreak: 0,
+      winStreak: 0,
+      bestWinStreak: 0,
+      lastDay: null,
+      freezes: 0,
+      freezesUsed: 0,
+      history: {},
+    },
+    duels: { ...wld(), played: 0, winStreak: 0, bestWinStreak: 0 },
+    matches: { ...wld(), played: 0, sweeps: 0 },
+    vs: { rookie: vsRecord(), gunslinger: vsRecord(), sheriff: vsRecord() },
+    distribution: [0, 0, 0, 0, 0, 0, 0],
+    fastestSolveMs: null,
+    suddenDeathWins: 0,
+    photoFinishWins: 0,
+    hardModeWins: 0,
+    shotClockWins: 0,
+    achievements: {},
+    recentAnswers: [],
+  };
+}
+
+/** Stats are plain JSON, so a JSON round-trip is a safe deep copy on every JS engine. */
+function cloneStats(stats: Stats): Stats {
+  return JSON.parse(JSON.stringify(stats));
+}
