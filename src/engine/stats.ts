@@ -119,3 +119,91 @@ export interface RecordResult {
   freezeEarned: boolean;
   freezesSpent: number;
 }
+
+/** Folds a finished standoff into the player's stats. Pure: returns a new object. */
+export function recordDuel(prev: Stats, input: DuelRecordInput): RecordResult {
+  const { config, outcome, you, ai } = input;
+  const now = input.now ?? Date.now();
+  const result = resultFor(outcome);
+  const won = result === 'win';
+  const stats = cloneStats(prev);
+
+  // Your solve, whether or not you won the standoff.
+  if (you.solvedRow !== null) {
+    const slot = you.solvedRow > 6 ? 6 : you.solvedRow - 1;
+    stats.distribution[slot]++;
+    if (stats.fastestSolveMs === null || you.totalMs < stats.fastestSolveMs) stats.fastestSolveMs = you.totalMs;
+  }
+
+  // Head-to-head record against this opponent.
+  const vs = stats.vs[config.opponent];
+  Object.assign(vs, bump(vs, result));
+  vs.streak = won ? vs.streak + 1 : 0;
+  vs.bestStreak = Math.max(vs.bestStreak, vs.streak);
+
+  if (won) {
+    if (outcome.suddenDeath) stats.suddenDeathWins++;
+    if (outcome.reason === 'photo-finish') stats.photoFinishWins++;
+    if (config.hardMode) stats.hardModeWins++;
+    if (config.shotClockMs !== null) stats.shotClockWins++;
+  }
+
+  let freezeEarned = false;
+  let freezesSpent = 0;
+
+  if (config.mode === 'daily' && config.dayNumber !== undefined) {
+    const day = config.dayNumber;
+    const d = stats.daily;
+    if (!d.history[day]) {
+      const gap = d.lastDay === null ? 1 : day - d.lastDay;
+      if (gap > 1) {
+        const missed = gap - 1;
+        if (missed <= d.freezes) {
+          d.freezes -= missed;
+          d.freezesUsed += missed;
+          freezesSpent = missed;
+        } else {
+          d.playStreak = 0;
+          d.winStreak = 0;
+        }
+      }
+      // gap < 1 means a past day is being recorded late; keep streaks as they are.
+      if (gap >= 1) {
+        d.playStreak++;
+        d.lastDay = day;
+        if (d.playStreak % FREEZE_EVERY === 0 && d.freezes < MAX_FREEZES) {
+          d.freezes++;
+          freezeEarned = true;
+        }
+      }
+      d.bestPlayStreak = Math.max(d.bestPlayStreak, d.playStreak);
+      d.winStreak = won ? d.winStreak + 1 : 0;
+      d.bestWinStreak = Math.max(d.bestWinStreak, d.winStreak);
+      d.played++;
+      Object.assign(d, bump(d, result));
+      d.history[day] = {
+        day,
+        answer: config.answer,
+        opponent: config.opponent,
+        result,
+        reason: outcome.reason,
+        yourSolvedRow: you.solvedRow,
+        aiSolvedRow: ai.solvedRow,
+        yourMs: you.totalMs,
+        playedAt: now,
+      };
+    }
+  } else {
+    const q = stats.duels;
+    q.played++;
+    Object.assign(q, bump(q, result));
+    q.winStreak = won ? q.winStreak + 1 : 0;
+    q.bestWinStreak = Math.max(q.bestWinStreak, q.winStreak);
+    stats.recentAnswers = [config.answer, ...stats.recentAnswers].slice(0, RECENT_LIMIT);
+  }
+
+  const unlocked = evaluateAchievements(stats, { kind: 'duel', input, result });
+  for (const id of unlocked) stats.achievements[id] = now;
+
+  return { stats, unlocked, freezeEarned, freezesSpent };
+}
