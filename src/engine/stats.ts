@@ -92,3 +92,30 @@ export function createStats(): Stats {
 function cloneStats(stats: Stats): Stats {
   return JSON.parse(JSON.stringify(stats));
 }
+
+export function resultFor(outcome: DuelOutcome): ResultKind {
+  return outcome.winner === 'you' ? 'win' : outcome.winner === 'ai' ? 'loss' : 'draw';
+}
+
+function bump(record: WLD, result: ResultKind): WLD {
+  return {
+    wins: record.wins + (result === 'win' ? 1 : 0),
+    losses: record.losses + (result === 'loss' ? 1 : 0),
+    draws: record.draws + (result === 'draw' ? 1 : 0),
+  };
+}
+
+export interface DuelRecordInput {
+  config: DuelConfig;
+  outcome: DuelOutcome;
+  you: Board;
+  ai: Board;
+  now?: number;
+}
+
+export interface RecordResult {
+  stats: Stats;
+  unlocked: string[];
+  freezeEarned: boolean;
+  freezesSpent: number;
+}
