@@ -207,3 +207,14 @@ export function recordDuel(prev: Stats, input: DuelRecordInput): RecordResult {
 
   return { stats, unlocked, freezeEarned, freezesSpent };
 }
+
+/** Folds a finished best-of-N match into stats. */
+export function recordMatch(prev: Stats, result: ResultKind, sweep: boolean, now = Date.now()): RecordResult {
+  const stats = cloneStats(prev);
+  stats.matches.played++;
+  Object.assign(stats.matches, bump(stats.matches, result));
+  if (sweep) stats.matches.sweeps++;
+  const unlocked = evaluateAchievements(stats, { kind: 'match', result, sweep });
+  for (const id of unlocked) stats.achievements[id] = now;
+  return { stats, unlocked, freezeEarned: false, freezesSpent: 0 };
+}
