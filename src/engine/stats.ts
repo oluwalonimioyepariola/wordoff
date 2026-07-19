@@ -218,3 +218,34 @@ export function recordMatch(prev: Stats, result: ResultKind, sweep: boolean, now
   for (const id of unlocked) stats.achievements[id] = now;
   return { stats, unlocked, freezeEarned: false, freezesSpent: 0 };
 }
+
+export type StreakStatus = 'active' | 'pending' | 'at-risk' | 'broken';
+
+/**
+ * The play streak as it stands today.
+ *  - active: today's daily is done
+ *  - pending: yesterday's was done, today's isn't yet
+ *  - at-risk: days were missed but freezes will cover them if you play today
+ *  - broken: too many days missed; the next daily starts a new streak
+ */
+export function streakStatus(stats: Stats, today: number): { streak: number; status: StreakStatus } {
+  const { lastDay, playStreak, freezes } = stats.daily;
+  if (lastDay === null) return { streak: 0, status: 'broken' };
+  const gap = today - lastDay;
+  if (gap <= 0) return { streak: playStreak, status: 'active' };
+  if (gap === 1) return { streak: playStreak, status: 'pending' };
+  if (gap - 1 <= freezes) return { streak: playStreak, status: 'at-risk' };
+  return { streak: 0, status: 'broken' };
+}
+
+export function winRate(record: WLD): number {
+  const played = record.wins + record.losses + record.draws;
+  return played === 0 ? 0 : Math.round((record.wins / played) * 100);
+}
+
+export function totalRecord(stats: Stats): WLD {
+  return Object.values(stats.vs).reduce(
+    (acc, r) => ({ wins: acc.wins + r.wins, losses: acc.losses + r.losses, draws: acc.draws + r.draws }),
+    wld(),
+  );
+}
