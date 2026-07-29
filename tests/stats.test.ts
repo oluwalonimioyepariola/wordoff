@@ -101,3 +101,49 @@ describe('daily streaks', () => {
     assert.deepEqual(streakStatus(createStats(), 1), { streak: 0, status: 'broken' });
   });
 });
+
+describe('quick duel stats, head-to-head, achievements', () => {
+  it('tracks quick duels separately and remembers recent answers', () => {
+    const d = finished('win', { mode: 'quick', dayNumber: undefined, opponent: 'rookie' });
+    const { stats, unlocked } = recordDuel(createStats(), {
+      config: d.config,
+      outcome: d.outcome!,
+      you: d.boards.you,
+      ai: d.boards.ai,
+    });
+    assert.equal(stats.duels.played, 1);
+    assert.equal(stats.daily.played, 0);
+    assert.equal(stats.vs.rookie.wins, 1);
+    assert.deepEqual(stats.recentAnswers, ['crane']);
+    assert.equal(stats.distribution[1], 1);
+    assert.equal(stats.fastestSolveMs, 10_000);
+    assert.ok(unlocked.includes('first-blood'));
+    assert.ok(unlocked.includes('quickdraw'));
+    assert.ok(unlocked.includes('lightning'));
+    assert.ok(!unlocked.includes('deadeye'));
+  });
+
+  it('unlocks each achievement only once', () => {
+    let s = playDaily(createStats(), 1).stats;
+    const again = playDaily(s, 2);
+    assert.ok(!again.unlocked.includes('first-blood'));
+    s = again.stats;
+    assert.ok(s.achievements['sheriff-slayer']);
+  });
+
+  it('tracks a per-opponent win streak for Untouchable', () => {
+    let s = createStats();
+    for (let day = 1; day <= 5; day++) s = playDaily(s, day).stats;
+    assert.equal(s.vs.sheriff.bestStreak, 5);
+    assert.ok(s.achievements.untouchable);
+    assert.equal(winRate(s.vs.sheriff), 100);
+  });
+
+  it('counts the solve in the distribution even when losing a photo finish', () => {
+    const d = round(round(createDuel(cfg()), 'slate', 'trace', 9000, 1000), 'crane', 'crane', 1000, 1000);
+    const { stats } = recordDuel(createStats(), { config: d.config, outcome: d.outcome!, you: d.boards.you, ai: d.boards.ai });
+    assert.equal(d.outcome?.reason, 'photo-finish');
+    assert.equal(stats.vs.sheriff.losses, 1);
+    assert.equal(stats.distribution[1], 1);
+  });
+});
