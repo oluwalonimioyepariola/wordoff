@@ -147,3 +147,54 @@ describe('quick duel stats, head-to-head, achievements', () => {
     assert.equal(stats.distribution[1], 1);
   });
 });
+
+describe('matches', () => {
+  const win = finished('win', { mode: 'quick' }).outcome!;
+  const loss = finished('loss', { mode: 'quick' }).outcome!;
+
+  it('ends a best-of-3 at two wins', () => {
+    let m = createMatch('gunslinger', 3);
+    m = recordMatchDuel(m, win);
+    assert.ok(!isMatchOver(m));
+    m = recordMatchDuel(m, loss);
+    m = recordMatchDuel(m, win);
+    assert.equal(m.winner, 'you');
+    assert.ok(!isSweep(m));
+  });
+
+  it('recognises a sweep and records it', () => {
+    let m = createMatch('gunslinger', 5);
+    for (let i = 0; i < 3; i++) m = recordMatchDuel(m, win);
+    assert.ok(isSweep(m));
+    const r = recordMatch(createStats(), 'win', true);
+    assert.equal(r.stats.matches.sweeps, 1);
+    assert.ok(r.unlocked.includes('clean-sweep'));
+  });
+
+  it('caps runaway draws', () => {
+    const draw = { winner: null, reason: 'exhausted' as const, rounds: 7, suddenDeath: true };
+    let m = createMatch('rookie', 1);
+    m = recordMatchDuel(m, draw);
+    assert.ok(!isMatchOver(m));
+    m = recordMatchDuel(m, draw);
+    assert.equal(m.winner, null);
+  });
+
+  it('avoids recently played answers', () => {
+    for (let i = 0; i < 50; i++) {
+      assert.notEqual(pickQuickAnswer(`seed-${i}`, ['crane', 'slate']), 'crane');
+    }
+  });
+});
+
+describe('share card', () => {
+  it('shows both boards without leaking letters', () => {
+    const d = finished('win', { dayNumber: 170 });
+    const text = buildShareText(d);
+    assert.match(text, /^Wordoff #170 🤠/);
+    assert.match(text, /Me 2\/6 vs The Sheriff X\/6, won/);
+    assert.equal(text.split('\n').length, 4);
+    assert.ok(!/crane|slate/i.test(text));
+    assert.match(buildShareText(d, { colorblind: true }), /🟧/);
+  });
+});
