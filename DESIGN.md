@@ -90,3 +90,37 @@ motion:
   taunt-bubble: { in: 200, hold: 2600, out: 200 }
   shot-clock-pulse: { under: 5000, period: 500 }
 ---
+
+## The feeling
+
+Wordoff is a duel, not a meditation. The chrome stays warm and quiet (cream
+canvas, charcoal ink, flat shapes) so that the tension lives in the game
+itself: the lock-in, the pause, the count, and the reveal.
+
+Every screen answers one question: **who's ahead?** That's why the two sides get
+their own colors and nothing else is allowed to use them.
+
+- **You are blue** (`you`). Your board, your timer, your score, your name.
+- **The rival is pink** (`rival`). Their mini-board, their "locked" badge,
+  their taunts, their score.
+- Green, yellow and gray belong to the tiles only.
+
+## Layout of a standoff
+
+```
+┌──────────────────────────────────┐
+│ ◀  Daily #170   ★ 12  ⏱ 0:18     │  top bar: back, puzzle, streak, shot clock
+│ ┌──────────┐            ▪▪▪▪▪    │  rival card (pink): avatar, name, mini board
+│ │ The      │  "Inevitable."▪▪▪▪▪ │  (colors only) + taunt bubble
+│ │ Sheriff  │  ● LOCKED     ▫▫▫▫▫ │
+│ └──────────┘                     │
+│                                  │
+│      ▢ ▢ ▢ ▢ ▢                   │  your board (blue accents), full size
+│      ▢ ▢ ▢ ▢ ▢                   │
+│      ...                         │
+│                                  │
+│  Q W E R T Y U I O P             │  keyboard
+│   A S D F G H J K L              │
+│  FIRE  Z X C V B N M  ⌫          │  Enter is labelled FIRE
+└──────────────────────────────────┘
+```
