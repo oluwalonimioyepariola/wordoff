@@ -150,3 +150,34 @@ on you.
 **Duelist avatars.** Original round characters, one per rival, drawn in each
 rival's accent. They replace photography and decoration. (Placeholder: colored
 circle with an initial until art exists.)
+
+## Signature moments
+
+1. **Lock-in.** Your row lifts 2px and gets a blue underline. If the rival
+   locked first, their badge is already showing.
+2. **Count.** "3 · 2 · 1" beats over a dimmed board (`countdown-beat`).
+3. **DRAW!** The word slams in (`draw-slam`), then your row flips tile by tile
+   while the rival's mini row fills in at the same time.
+4. **Strong row.** 3+ greens from either side triggers a taunt.
+5. **Sudden death.** The canvas tints toward `dusk`, a "SUDDEN DEATH" banner
+   appears in `danger`, and the revealed hint letter is pre-filled in green.
+6. **Result.** The winner's row bounces (`win-bounce`), the loser's board dims
+   (`lose-dim`). The headline uses `display` type.
+
+## Accessibility
+
+- Colorblind mode swaps `correct` and `present` for `correct-cb` and
+  `present-cb`, and the share card uses 🟧/🟦.
+- Reduced motion turns flips, slams and shakes into short fades. Information
+  is never conveyed by motion alone.
+- Every tile has an accessible label like "C, correct" or "R, in the word".
+- Tap targets are at least 44pt. Keyboard keys are 56pt tall.
+
+## Do / Don't
+
+- **Do** reserve blue for you and pink for the rival, everywhere.
+- **Do** keep surfaces flat. Depth comes from color and radius, not shadows.
+  The one exception is the DRAW! banner, which may cast a single shadow.
+- **Don't** show the rival's letters, ever. Only colors.
+- **Don't** add a third side color. Neutral UI uses ink and hairline.
+- **Don't** use another brand's mascots, fonts or illustrations.
