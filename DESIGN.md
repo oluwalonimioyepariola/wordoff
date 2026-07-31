@@ -124,3 +124,29 @@ their own colors and nothing else is allowed to use them.
 │  FIRE  Z X C V B N M  ⌫          │  Enter is labelled FIRE
 └──────────────────────────────────┘
 ```
+
+## Components
+
+**Tile.** 1:1 square, `rounded.tile`, 2px `hairline` border while empty, ink
+border while filled, then flips to its feedback color. Letters in `tile` type.
+
+**Rival mini-board.** 5×6 grid of 12px squares, colors only. It fills in at
+the same moment as your row flips. A row with no guess (a blank) shows as dashed.
+
+**Keyboard key.** `rounded.key`, 56px tall, `label` type. It takes the best
+feedback color seen for that letter on *your* board only. The rival's letters
+are never shown.
+
+**Lock-in badge.** A pill in `rival` (or `you`) with "LOCKED". It appears the
+moment that side commits, so you can feel the pressure when the rival is waiting
+on you.
+
+**Shot clock.** A caption-sized timer in the top bar. Under 5 seconds it turns
+`danger` and pulses. At zero you fire a blank.
+
+**Primary button.** `you` fill, white label, `rounded.button`, 48px tall.
+**Secondary button.** Surface fill, 1px ink border, `rounded.pill`.
+
+**Duelist avatars.** Original round characters, one per rival, drawn in each
+rival's accent. They replace photography and decoration. (Placeholder: colored
+circle with an initial until art exists.)
