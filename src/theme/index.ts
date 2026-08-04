@@ -25,3 +25,34 @@ const light = {
 };
 
 export type Palette = typeof light;
+
+const dark: Palette = {
+  ...light,
+  canvas: '#1b1a19',
+  surface: '#262523',
+  ink: '#f4efe9',
+  inkSoft: '#a8a29b',
+  hairline: '#3a3835',
+  you: '#4d8ef7',
+  youSoft: '#1d2c48',
+  rival: '#f06595',
+  rivalSoft: '#4a1f30',
+  correct: '#2b9a52',
+  present: '#e6b800',
+  absent: '#4a4744',
+  keyIdle: '#3a3835',
+};
+
+const colorblind = { correct: '#f5793a', present: '#85c0f9', onPresent: '#2d2c2b' };
+
+export const radius = { tile: 8, key: 8, card: 16, panel: 24, button: 32, pill: 999 };
+export const space = { xs: 4, sm: 8, md: 12, base: 16, lg: 24, xl: 32, xxl: 48 };
+
+export const motion = {
+  tilePop: 100,
+  flipHalf: 220,
+  flipStagger: 110,
+  shake: 420,
+  countdownBeat: 550,
+  taunt: 2600,
+};
