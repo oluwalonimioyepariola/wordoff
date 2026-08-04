@@ -16,3 +16,24 @@ export interface Settings {
   theme: ThemePref;
   seenHowTo: boolean;
 }
+
+interface SettingsStore extends Settings {
+  set<K extends keyof Settings>(key: K, value: Settings[K]): void;
+}
+
+export const useSettings = create<SettingsStore>()(
+  persist(
+    (set) => ({
+      hardMode: false,
+      shotClock: null,
+      colorblind: false,
+      reducedMotion: false,
+      haptics: true,
+      taunts: true,
+      theme: 'system',
+      seenHowTo: false,
+      set: (key, value) => set({ [key]: value } as Partial<Settings>),
+    }),
+    { name: 'wordoff-settings', storage: deviceStorage, version: 1 },
+  ),
+);
