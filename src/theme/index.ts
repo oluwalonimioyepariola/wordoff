@@ -56,3 +56,28 @@ export const motion = {
   countdownBeat: 550,
   taunt: 2600,
 };
+
+export interface Theme {
+  dark: boolean;
+  c: Palette;
+  reducedMotion: boolean;
+  markColor(mark: Mark | undefined): { bg: string; fg: string };
+}
+
+export function useTheme(): Theme {
+  const system = useColorScheme();
+  const { theme, colorblind: cb, reducedMotion } = useSettings();
+  const isDark = theme === 'system' ? system === 'dark' : theme === 'dark';
+  const c: Palette = { ...(isDark ? dark : light), ...(cb ? colorblind : {}) };
+  return {
+    dark: isDark,
+    c,
+    reducedMotion,
+    markColor: (mark) => {
+      if (mark === 'correct') return { bg: c.correct, fg: c.onCorrect };
+      if (mark === 'present') return { bg: c.present, fg: c.onPresent };
+      if (mark === 'absent') return { bg: c.absent, fg: c.onAbsent };
+      return { bg: c.keyIdle, fg: c.ink };
+    },
+  };
+}
