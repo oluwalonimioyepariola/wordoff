@@ -86,3 +86,13 @@ export function Tile({ letter, mark, flipDelay = null, bounceDelay = null, size,
     </Animated.View>
   );
 }
+
+const styles = StyleSheet.create({
+  tile: {
+    borderWidth: 2,
+    borderRadius: radius.tile,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  letter: { fontWeight: '800' },
+});
