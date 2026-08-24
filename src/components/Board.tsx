@@ -57,3 +57,35 @@ export function Board({ rows, totalRows, current, currentLocked, revealingRow, s
     </View>
   );
 }
+
+function ShakeRow({ children, shakeKey, lifted }: { children: React.ReactNode; shakeKey: number | null; lifted: boolean }) {
+  const { reducedMotion } = useTheme();
+  const x = useSharedValue(0);
+  const y = useSharedValue(0);
+
+  useEffect(() => {
+    if (shakeKey === null || reducedMotion) return;
+    const step = motion.shake / 6;
+    x.value = withSequence(
+      withTiming(-8, { duration: step }),
+      withTiming(8, { duration: step }),
+      withTiming(-8, { duration: step }),
+      withTiming(8, { duration: step }),
+      withTiming(-4, { duration: step }),
+      withTiming(0, { duration: step }),
+    );
+  }, [shakeKey, reducedMotion, x]);
+
+  useEffect(() => {
+    y.value = withTiming(lifted ? -2 : 0, { duration: 120 });
+  }, [lifted, y]);
+
+  const style = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }, { translateY: y.value }] }));
+  return <Animated.View style={[styles.row, style, lifted && { opacity: 0.85 }]}>{children}</Animated.View>;
+}
+
+const styles = StyleSheet.create({
+  board: { gap: 6, alignItems: 'center' },
+  row: { flexDirection: 'row', gap: 6 },
+  blank: { borderWidth: 2, borderStyle: 'dashed', borderRadius: 8 },
+});
