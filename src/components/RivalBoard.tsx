@@ -33,3 +33,9 @@ export function RivalBoard({ rows, totalRows, cell = 12 }: { rows: DuelRow[]; to
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  grid: { gap: 3 },
+  row: { flexDirection: 'row', gap: 3 },
+  cell: { borderRadius: 3 },
+});
