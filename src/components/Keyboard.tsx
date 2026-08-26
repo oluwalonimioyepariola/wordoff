@@ -25,3 +25,18 @@ interface KeyProps {
 
 // Defined at module level (and memoized) so keys aren't remounted on every
 // render, which would drop taps that land mid-render during fast typing.
+const Key = memo(function Key({ label, value, flex = 1, mark, disabled, a11y, onPress }: KeyProps) {
+  const { markColor } = useTheme();
+  const { bg, fg } = markColor(mark);
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={a11y ?? label}
+      disabled={disabled}
+      onPress={() => onPress(value)}
+      style={({ pressed }) => [styles.key, { flex, backgroundColor: bg, opacity: disabled ? 0.55 : pressed ? 0.7 : 1 }]}
+    >
+      <Text style={[styles.label, { color: fg }]}>{label}</Text>
+    </Pressable>
+  );
+});
