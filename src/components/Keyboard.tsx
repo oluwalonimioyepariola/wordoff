@@ -40,3 +40,26 @@ const Key = memo(function Key({ label, value, flex = 1, mark, disabled, a11y, on
     </Pressable>
   );
 });
+
+export function Keyboard({ keys, disabled, onLetter, onFire, onBack }: Props) {
+  return (
+    <View style={styles.wrap}>
+      {ROWS.map((row, r) => (
+        <View key={row} style={styles.row}>
+          {r === 2 && <Key label="FIRE" value="fire" flex={1.6} disabled={disabled} onPress={onFire} a11y="Fire guess" />}
+          {row.split('').map((l) => (
+            <Key key={l} label={l.toUpperCase()} value={l} mark={keys[l]} disabled={disabled} onPress={onLetter} />
+          ))}
+          {r === 2 && <Key label="⌫" value="back" flex={1.6} disabled={disabled} onPress={onBack} a11y="Delete letter" />}
+        </View>
+      ))}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  wrap: { gap: 8, paddingHorizontal: 8 },
+  row: { flexDirection: 'row', gap: 5, justifyContent: 'center' },
+  key: { height: 56, borderRadius: radius.key, alignItems: 'center', justifyContent: 'center' },
+  label: { fontSize: 14, fontWeight: '700' },
+});
