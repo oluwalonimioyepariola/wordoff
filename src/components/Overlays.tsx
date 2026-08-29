@@ -54,3 +54,31 @@ export function CountdownOverlay({ beat }: { beat: CountBeat | null }) {
     </View>
   );
 }
+
+/** A speech bubble from the rival that fades in, holds, and fades out. */
+export function TauntBubble({ text, id }: { text: string | null; id: number | null }) {
+  const { c, reducedMotion } = useTheme();
+  const opacity = useSharedValue(0);
+  const y = useSharedValue(6);
+
+  useEffect(() => {
+    if (!text) return;
+    const fade = reducedMotion ? 0 : 200;
+    opacity.value = withSequence(
+      withTiming(1, { duration: fade }),
+      withDelay(motion.taunt, withTiming(0, { duration: fade })),
+    );
+    y.value = reducedMotion ? 0 : withSequence(withTiming(0, { duration: fade }), withDelay(motion.taunt, withTiming(6, { duration: fade })));
+  }, [id, text, reducedMotion, opacity, y]);
+
+  const style = useAnimatedStyle(() => ({ opacity: opacity.value, transform: [{ translateY: y.value }] }));
+  if (!text) return null;
+  return (
+    <Animated.View
+      accessibilityLiveRegion="polite"
+      style={[styles.bubble, { backgroundColor: c.rivalSoft, borderColor: c.rival }, style]}
+    >
+      <Text style={[styles.bubbleText, { color: c.ink }]}>“{text}”</Text>
+    </Animated.View>
+  );
+}
