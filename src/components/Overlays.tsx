@@ -82,3 +82,37 @@ export function TauntBubble({ text, id }: { text: string | null; id: number | nu
     </Animated.View>
   );
 }
+
+/** Brief error toast (e.g. "Not in word list"). */
+export function Toast({ message, id }: { message: string | null; id: number | null }) {
+  const { c } = useTheme();
+  const opacity = useSharedValue(0);
+  useEffect(() => {
+    if (!message) return;
+    opacity.value = withSequence(withTiming(1, { duration: 100 }), withDelay(1400, withTiming(0, { duration: 200 })));
+  }, [id, message, opacity]);
+  const style = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  if (!message) return null;
+  return (
+    <Animated.View pointerEvents="none" style={[styles.toast, { backgroundColor: c.ink }, style]}>
+      <Text style={{ color: c.canvas, fontWeight: '700' }}>{message}</Text>
+    </Animated.View>
+  );
+}
+
+const styles = StyleSheet.create({
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  badge: { paddingHorizontal: 28, paddingVertical: 12, borderRadius: radius.panel },
+  text: { fontSize: 56, fontWeight: '800', letterSpacing: -1.2 },
+  bubble: { borderWidth: 1, borderRadius: radius.card, paddingHorizontal: 12, paddingVertical: 8, maxWidth: 220 },
+  bubbleText: { fontSize: 13, fontStyle: 'italic' },
+  toast: {
+    position: 'absolute',
+    top: 8,
+    alignSelf: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: radius.card,
+    zIndex: 10,
+  },
+});
