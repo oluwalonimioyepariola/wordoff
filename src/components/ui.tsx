@@ -30,3 +30,45 @@ export function H({ children, size = 'heading' }: { children: React.ReactNode; s
   const { c } = useTheme();
   return <Text style={[styles[size], { color: c.ink }]}>{children}</Text>;
 }
+
+export function P({ children, soft, center }: { children: React.ReactNode; soft?: boolean; center?: boolean }) {
+  const { c } = useTheme();
+  return (
+    <Text style={[styles.body, { color: soft ? c.inkSoft : c.ink, textAlign: center ? 'center' : 'left' }]}>{children}</Text>
+  );
+}
+
+export function Button({
+  label,
+  onPress,
+  kind = 'primary',
+  disabled,
+}: {
+  label: string;
+  onPress(): void;
+  kind?: 'primary' | 'secondary' | 'rival';
+  disabled?: boolean;
+}) {
+  const { c } = useTheme();
+  const bg = kind === 'primary' ? c.you : kind === 'rival' ? c.rival : c.surface;
+  const fg = kind === 'secondary' ? c.ink : '#ffffff';
+  return (
+    <Pressable
+      accessibilityRole="button"
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.button,
+        {
+          backgroundColor: bg,
+          borderRadius: kind === 'secondary' ? radius.pill : radius.button,
+          borderWidth: kind === 'secondary' ? 1 : 0,
+          borderColor: c.ink,
+          opacity: disabled ? 0.4 : pressed ? 0.8 : 1,
+        },
+      ]}
+    >
+      <Text style={[styles.buttonLabel, { color: fg }]}>{label}</Text>
+    </Pressable>
+  );
+}
