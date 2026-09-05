@@ -72,3 +72,33 @@ export function Button({
     </Pressable>
   );
 }
+
+export function Segmented<T extends string | number | null>({
+  options,
+  value,
+  onChange,
+}: {
+  options: { label: string; value: T }[];
+  value: T;
+  onChange(v: T): void;
+}) {
+  const { c } = useTheme();
+  return (
+    <View style={[styles.segmented, { borderColor: c.hairline }]}>
+      {options.map((o) => {
+        const on = o.value === value;
+        return (
+          <Pressable
+            key={String(o.value)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: on }}
+            onPress={() => onChange(o.value)}
+            style={[styles.segment, on && { backgroundColor: c.ink }]}
+          >
+            <Text style={{ color: on ? c.canvas : c.ink, fontWeight: '700', fontSize: 13 }}>{o.label}</Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
