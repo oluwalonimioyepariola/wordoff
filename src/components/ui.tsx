@@ -102,3 +102,16 @@ export function Segmented<T extends string | number | null>({
     </View>
   );
 }
+
+export function ToggleRow({ label, detail, value, onChange }: { label: string; detail?: string; value: boolean; onChange(v: boolean): void }) {
+  const { c } = useTheme();
+  return (
+    <View style={styles.toggleRow}>
+      <View style={{ flex: 1 }}>
+        <Text style={[styles.body, { color: c.ink, fontWeight: '600' }]}>{label}</Text>
+        {detail && <Text style={[styles.caption, { color: c.inkSoft }]}>{detail}</Text>}
+      </View>
+      <Switch value={value} onValueChange={onChange} trackColor={{ true: c.you }} />
+    </View>
+  );
+}
