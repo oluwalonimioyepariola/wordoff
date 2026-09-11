@@ -115,3 +115,39 @@ export function ToggleRow({ label, detail, value, onChange }: { label: string; d
     </View>
   );
 }
+
+/** Placeholder duelist portrait until real character art exists (see DESIGN.md). */
+export function Avatar({ profile, size = 44 }: { profile: OpponentProfile; size?: number }) {
+  const { c } = useTheme();
+  return (
+    <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: c.rival, alignItems: 'center', justifyContent: 'center' }}>
+      <Text style={{ color: '#fff', fontWeight: '800', fontSize: size * 0.42 }}>{profile.name[0]}</Text>
+    </View>
+  );
+}
+
+export function Pips({ n, of = 3 }: { n: number; of?: number }) {
+  const { c } = useTheme();
+  return (
+    <View style={{ flexDirection: 'row', gap: 3 }} accessibilityLabel={`Difficulty ${n} of ${of}`}>
+      {Array.from({ length: of }, (_, i) => (
+        <View key={i} style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: i < n ? c.rival : c.hairline }} />
+      ))}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  scroll: { padding: space.base, gap: space.base, paddingBottom: space.xxl },
+  card: { borderWidth: 1, borderRadius: radius.card, padding: space.base, gap: space.sm },
+  display: { fontSize: 40, fontWeight: '800', letterSpacing: -1.2 },
+  title: { fontSize: 28, fontWeight: '700', letterSpacing: -0.6 },
+  heading: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
+  body: { fontSize: 16, lineHeight: 24 },
+  caption: { fontSize: 12, fontWeight: '500' },
+  button: { height: 48, paddingHorizontal: 24, alignItems: 'center', justifyContent: 'center' },
+  buttonLabel: { fontSize: 14, fontWeight: '700' },
+  segmented: { flexDirection: 'row', borderWidth: 1, borderRadius: radius.pill, padding: 3, gap: 3 },
+  segment: { flex: 1, paddingVertical: 8, borderRadius: radius.pill, alignItems: 'center' },
+  toggleRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.sm },
+});
