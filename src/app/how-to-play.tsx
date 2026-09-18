@@ -57,3 +57,7 @@ export default function HowToPlay() {
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  row: { flexDirection: 'row', gap: 6, marginVertical: 4 },
+});
