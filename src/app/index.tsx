@@ -157,3 +157,13 @@ export default function Home() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  scroll: { padding: space.base, gap: space.md },
+  header: { gap: 2, marginBottom: space.xs },
+  rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  rival: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  big: { fontSize: 24, fontWeight: '800' },
+  links: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  link: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8 },
+});
