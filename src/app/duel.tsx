@@ -207,3 +207,32 @@ function StandoffView({ initial, onNext }: { initial: DuelState; onNext(): void 
     </SafeAreaView>
   );
 }
+
+const secs = (ms: number) => `${(ms / 1000).toFixed(2)}s`;
+
+/** Tints the canvas slightly toward another color (sudden death dusk). */
+function mix(a: string, b: string, t = 0.12): string {
+  const p = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const [x, y] = [p(a), p(b)];
+  return `#${x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, '0')).join('')}`;
+}
+
+const styles = StyleSheet.create({
+  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: space.base, paddingVertical: space.sm },
+  rivalCard: {
+    marginHorizontal: space.base,
+    borderWidth: 1,
+    borderRadius: radius.card,
+    padding: space.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    minHeight: 96,
+  },
+  badge: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
+  badgeText: { color: '#fff', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
+  suddenDeath: { textAlign: 'center', fontWeight: '800', marginTop: space.sm, letterSpacing: 1 },
+  boardArea: { flex: 1, justifyContent: 'center', gap: space.sm, paddingVertical: space.sm },
+  result: { margin: space.base, borderWidth: 1, borderRadius: radius.panel, padding: space.base, gap: space.sm },
+  resultButtons: { flexDirection: 'row', gap: space.sm, marginTop: space.xs },
+});
