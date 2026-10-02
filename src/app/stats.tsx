@@ -90,3 +90,14 @@ export default function StatsScreen() {
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  grid: { flexDirection: 'row', flexWrap: 'wrap' },
+  stat: { width: '25%', paddingVertical: 8, alignItems: 'center' },
+  value: { fontSize: 22, fontWeight: '800' },
+  label: { fontSize: 11, textAlign: 'center' },
+  distRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  bar: { borderRadius: 4, paddingHorizontal: 6, paddingVertical: 3, alignItems: 'flex-end' },
+  barText: { color: '#fff', fontWeight: '700', fontSize: 12 },
+  vsRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6 },
+});
