@@ -61,3 +61,9 @@ export default function HistoryScreen() {
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  calendar: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  day: { width: 32, height: 32, borderRadius: 8, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
+  row: { flexDirection: 'row', alignItems: 'center' },
+});
