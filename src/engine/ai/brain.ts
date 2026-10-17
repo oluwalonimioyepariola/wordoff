@@ -2,7 +2,7 @@ import { createRng, Rng, shuffled } from '../rng';
 import { OpponentId, ScoredGuess, SuddenDeathHint } from '../types';
 import { answersFor, WordLength } from '../words';
 import { getOpponent, OpponentProfile } from './opponents';
-import { bestInformationGuess, filterCandidates, filterGreensOnly } from './solver';
+import { bestInformationGuess, filterCandidates, filterSensible } from './solver';
 
 /** Strong openers that are also answers, so an opener can win on row one. */
 const OPENERS: Record<WordLength, string[]> = {
@@ -23,10 +23,15 @@ const PRESSURE_PER_ROW = 0.08;
 export interface BrainTuning {
   /** Overrides the profile's chance of using every clue (loose/consistent strategies). */
   clueDiscipline?: number;
-  /** The first N rows are wild shots that ignore clues (the AI still learns from them). */
+  /** The first N of its own shots are loose: greens kept, grays avoided, yellows ignored. */
   warmupRows?: number;
   /** Overrides the simulated aiming time. */
   thinkMs?: { min: number; max: number };
+  /**
+   * Only fire words that could be the answer. On a shared board, probe words
+   * would hand the opponent free information, so the duel engine turns this on.
+   */
+  candidatesOnly?: boolean;
 }
 
 export interface AiBrain {
@@ -68,26 +73,30 @@ export function createBrain(
     if (history.length === 0 && !hint) {
       return profile.strategy === 'loose' || warmupRows > 0 ? rng.pick(ANSWERS) : rng.pick(OPENERS[length]);
     }
-    if (ownShots < warmupRows && !hint) {
-      return rng.pick(fresh(ANSWERS.slice()));
-    }
 
     const candidates = fresh(filterCandidates(ANSWERS, history, hint));
+    // A loose shot never ignores greens or reuses grays; it only skips the yellow logic.
+    const loose = () => {
+      const sensible = fresh(filterSensible(ANSWERS, history));
+      return sensible.length ? rng.pick(sensible) : rng.pick(candidates.length ? candidates : fresh(ANSWERS.slice()));
+    };
+    if (ownShots < warmupRows && !hint) return loose();
     // The answer pool is closed, so this only happens if the answer came from
     // outside it (never in normal play). Fall back to anything unguessed.
     if (candidates.length === 0) return rng.pick(fresh(ANSWERS.slice()));
 
     switch (profile.strategy) {
       case 'information':
-        return informationGuess(candidates, ANSWERS, rng);
+        return tuning.candidatesOnly
+          ? bestInformationGuess(candidates, candidates)
+          : informationGuess(candidates, ANSWERS, rng);
       case 'consistent':
       case 'loose': {
         // Pressure sharpens everyone: discipline rises each row, and sudden
         // death (one shot left) leaves no room for sloppiness.
         const discipline = profile.clueDiscipline + PRESSURE_PER_ROW * ownShots;
         if (hint || rng.chance(discipline)) return rng.pick(candidates);
-        const sloppy = fresh(filterGreensOnly(ANSWERS, history));
-        return sloppy.length ? rng.pick(sloppy) : rng.pick(candidates);
+        return loose();
       }
     }
   };

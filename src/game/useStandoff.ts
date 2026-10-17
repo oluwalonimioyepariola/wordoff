@@ -61,8 +61,14 @@ export function useStandoff({ initial, onChange, onFinish }: Options) {
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const brain = useMemo(
-    () => createBrain(initial.config.opponent, initial.config.seed, initial.config.tuning, length),
-    [initial.config.opponent, initial.config.seed, initial.config.tuning, length],
+    () =>
+      createBrain(
+        initial.config.opponent,
+        initial.config.seed,
+        { ...initial.config.tuning, candidatesOnly: shared || initial.config.tuning?.candidatesOnly },
+        length,
+      ),
+    [initial.config.opponent, initial.config.seed, initial.config.tuning, length, shared],
   );
   /** How many letters of its next guess the rival has "typed" while it aims. */
   const [rivalTyped, setRivalTyped] = useState(0);

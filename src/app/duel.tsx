@@ -90,6 +90,8 @@ export default function DuelScreen() {
         board: level.board,
         wordLength: level.wordLength,
         maxRows: level.maxRows,
+        headStart: level.headStart,
+        firstShooter: level.firstShooter,
       });
     }
     if (!match) return null;

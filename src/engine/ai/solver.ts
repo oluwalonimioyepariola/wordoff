@@ -22,6 +22,29 @@ export function filterCandidates(
   return words.filter((w) => isConsistent(w, history, hint));
 }
 
+/**
+ * A "sensible but imperfect" filter: keeps every green in place and never
+ * reuses a letter known to be absent, but doesn't work out where yellows go.
+ * Weak rivals guess from this, so they look like they're playing, not flailing.
+ */
+export function filterSensible(words: readonly string[], history: readonly ScoredGuess[]): string[] {
+  const length = words[0]?.length ?? 5;
+  const fixed: (string | null)[] = new Array(length).fill(null);
+  const seen = new Set<string>(); // letters known to be in the word
+  const grays = new Set<string>();
+  for (const { guess, marks } of history) {
+    marks.forEach((m, i) => {
+      if (m === 'correct') fixed[i] = guess[i];
+      if (m === 'absent') grays.add(guess[i]);
+      else seen.add(guess[i]);
+    });
+  }
+  for (const c of seen) grays.delete(c); // a repeated letter can be gray once and still be in the word
+  return words.filter(
+    (w) => fixed.every((c, i) => c === null || w[i] === c) && ![...w].some((c) => grays.has(c)),
+  );
+}
+
 /** Words that keep every green in place but may ignore yellows and grays. */
 export function filterGreensOnly(words: readonly string[], history: readonly ScoredGuess[]): string[] {
   const fixed: (string | null)[] = new Array(words[0]?.length ?? 5).fill(null);

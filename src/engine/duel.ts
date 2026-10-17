@@ -60,6 +60,8 @@ export interface DuelConfig {
   maxRows?: number;
   /** Shared board: who shoots first (default you). */
   firstShooter?: PlayerId;
+  /** Shared board: extra shots you fire before the rival's first turn (easy levels). */
+  headStart?: number;
 }
 
 export interface DuelRow {
@@ -290,7 +292,11 @@ function fireShared(state: DuelState, player: PlayerId, guess: string | null, ti
     order: [...(state.order ?? []), player],
     lastShot: { by: player, row },
     round: rowNumber,
-    turn: opponentOf(player),
+    // A head start keeps the turn with you until you've fired your bonus shots.
+    turn:
+      player === 'you' && state.boards.ai.rows.length === 0 && shotNumber <= (state.config.headStart ?? 0)
+        ? 'you'
+        : opponentOf(player),
   };
   const end = (winner: PlayerId | null, reason: OutcomeReason): DuelState => ({
     ...base,
