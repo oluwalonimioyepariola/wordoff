@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Card, P, Screen } from '../components/ui';
 import { dateForDayNumber, dayNumber, getOpponent } from '../engine';
 import { useProfile } from '../store/profile';
-import { useTheme } from '../theme';
+import { fonts, useTheme } from '../theme';
 
 const DAYS_SHOWN = 35;
 
@@ -17,7 +17,7 @@ export default function HistoryScreen() {
   const color = (day: number) => {
     const r = history[day];
     if (!r) return c.hairline;
-    return r.result === 'win' ? c.correct : r.result === 'loss' ? c.rival : c.present;
+    return r.result === 'win' ? c.you : r.result === 'loss' ? c.rival : c.brass;
   };
 
   return (
@@ -34,14 +34,14 @@ export default function HistoryScreen() {
             </View>
           ))}
         </View>
-        <P soft>Green: won · Pink: lost · Yellow: draw</P>
+        <P soft>Navy: won · Oxblood: lost · Brass: draw</P>
       </Card>
 
       {records.length === 0 && <P soft center>No daily standoffs yet. Today’s is waiting.</P>}
       {records.map((r) => (
         <Card key={r.day} style={styles.row}>
           <View style={{ flex: 1 }}>
-            <Text style={{ color: c.ink, fontWeight: '700' }}>
+            <Text style={{ color: c.ink, fontFamily: fonts.slab, fontSize: 16 }}>
               #{r.day} · {r.answer.toUpperCase()}
             </Text>
             <Text style={{ color: c.inkSoft }}>
@@ -49,7 +49,7 @@ export default function HistoryScreen() {
             </Text>
           </View>
           <View style={{ alignItems: 'flex-end' }}>
-            <Text style={{ color: r.result === 'win' ? c.correct : r.result === 'loss' ? c.rival : c.ink, fontWeight: '800' }}>
+            <Text style={{ color: r.result === 'win' ? c.you : r.result === 'loss' ? c.rival : c.ink, fontFamily: fonts.slab, fontSize: 15 }}>
               {r.result.toUpperCase()}
             </Text>
             <Text style={{ color: c.inkSoft, fontSize: 12 }}>
