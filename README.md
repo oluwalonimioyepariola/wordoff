@@ -30,3 +30,25 @@ Runs fully offline with React Native (Expo). No server, no account.
 - **Feel.** Tile pop and flip, row shake, the DRAW! slam, win bounce,
   taunts, haptics.
 - **Accessibility.** Dark mode, colorblind tiles, reduced motion, labelled tiles.
+
+## Run it
+
+```bash
+npm install
+npm run ios        # Expo Go in the iOS Simulator
+npm test           # engine tests (node:test via tsx)
+npm run typecheck
+npm run build:words  # regenerate word lists from scripts/answers.txt
+```
+
+## Layout
+
+- `src/engine/`: all game logic, pure TypeScript, no React. Covers scoring, daily
+  word, duel rules, AI, stats and streaks, achievements, and the share card.
+- `src/game/useStandoff.ts`: sequences a duel on screen (AI aiming, countdown,
+  reveal, shot clock, taunts).
+- `src/app/`: Expo Router screens. `src/components/`: board, tiles, keyboard,
+  overlays.
+- `src/store/`: persisted settings and profile (AsyncStorage).
+- `DESIGN.md`: the Wordoff design system.
+- `tests/`: engine tests.
