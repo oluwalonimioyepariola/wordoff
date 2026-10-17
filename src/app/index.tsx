@@ -9,12 +9,16 @@ import {
   dailyOpponent,
   dayNumber,
   formatCountdown,
+  getLevel,
   getOpponent,
   isMatchOver,
+  LEVEL_COUNT,
+  levelBlurb,
   msUntilNextDay,
   OPPONENT_ORDER,
   OpponentId,
   streakStatus,
+  totalStars,
 } from '../engine';
 import { useProfile } from '../store/profile';
 import { useSettings } from '../store/settings';
@@ -99,6 +103,24 @@ export default function Home() {
               onPress={() => router.push({ pathname: '/duel', params: { mode: 'daily' } })}
             />
           )}
+        </Card>
+
+        <Card>
+          <View style={styles.rowBetween}>
+            <H>Level mode</H>
+            <Text style={{ color: c.present, fontWeight: '800' }}>
+              ★ {totalStars(stats)}/{LEVEL_COUNT * 3}
+            </Text>
+          </View>
+          <P>
+            Level {stats.levels.unlocked}: {getLevel(stats.levels.unlocked).title}
+          </P>
+          <P soft>{levelBlurb(getLevel(stats.levels.unlocked))}</P>
+          <Button
+            label={`Play level ${stats.levels.unlocked}`}
+            onPress={() => router.push({ pathname: '/duel', params: { mode: 'level', id: String(stats.levels.unlocked) } })}
+          />
+          <Button kind="secondary" label="All levels" onPress={() => router.push('/levels')} />
         </Card>
 
         <Card>

@@ -13,12 +13,13 @@ interface Props {
   currentLocked: boolean;
   revealingRow: number | null;
   shakeKey: number | null;
-  hint: SuddenDeathHint | null;
+  /** Letters revealed to you; shown in the row you're typing until you type over them. */
+  hints: SuddenDeathHint[];
   celebrate: boolean;
   tileSize: number;
 }
 
-export function Board({ rows, totalRows, current, currentLocked, revealingRow, shakeKey, hint, celebrate, tileSize }: Props) {
+export function Board({ rows, totalRows, current, currentLocked, revealingRow, shakeKey, hints, celebrate, tileSize }: Props) {
   const { c } = useTheme();
   const currentIndex = rows.length;
 
@@ -27,7 +28,6 @@ export function Board({ rows, totalRows, current, currentLocked, revealingRow, s
       {Array.from({ length: totalRows }, (_, r) => {
         const row = rows[r];
         const isCurrent = r === currentIndex && current !== null;
-        const isSuddenDeathRow = hint !== null && r === totalRows - 1;
         const solved = row && isSolved(row.marks);
         return (
           <ShakeRow key={r} shakeKey={isCurrent ? shakeKey : null} lifted={isCurrent && currentLocked}>
@@ -48,8 +48,8 @@ export function Board({ rows, totalRows, current, currentLocked, revealingRow, s
                 );
               }
               const typed = isCurrent ? (current ?? '')[i] ?? '' : '';
-              const showHint = isSuddenDeathRow && !typed && hint!.index === i;
-              return <Tile key={i} size={tileSize} letter={showHint ? hint!.letter : typed} hint={showHint} />;
+              const hint = isCurrent && !typed ? hints.find((h) => h.index === i) : undefined;
+              return <Tile key={i} size={tileSize} letter={hint ? hint.letter : typed} hint={!!hint} />;
             })}
           </ShakeRow>
         );

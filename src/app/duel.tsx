@@ -1,6 +1,6 @@
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { Alert, Pressable, Share, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Share, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Board } from '../components/Board';
 import { Keyboard } from '../components/Keyboard';
@@ -16,10 +16,15 @@ import {
   dayNumber,
   DuelState,
   getAchievement,
+  getLevel,
   getOpponent,
+  LEVEL_COUNT,
+  levelAnswer,
+  levelSeed,
   outcomeHeadline,
   pickQuickAnswer,
   randomSeed,
+  starsFor,
   winsNeeded,
 } from '../engine';
 import { useStandoff } from '../game/useStandoff';
@@ -27,12 +32,17 @@ import { useProfile } from '../store/profile';
 import { useSettings } from '../store/settings';
 import { radius, space, useTheme } from '../theme';
 
+/** Scouts allowed in a Quick Duel. The Daily has none, so results stay comparable. */
+const QUICK_SCOUTS = 1;
+
 /** Picks or resumes the right duel for the mode, then hands it to the standoff view. */
 export default function DuelScreen() {
-  const { mode } = useLocalSearchParams<{ mode: 'daily' | 'quick' }>();
-  const { activeDaily, activeQuick, match, stats } = useProfile();
+  const params = useLocalSearchParams<{ mode: 'daily' | 'quick' | 'level'; id?: string }>();
+  const { mode } = params;
+  const levelId = Number(params.id ?? 0);
+  const { activeDaily, activeQuick, activeLevel, match, stats } = useProfile();
   const settings = useSettings();
-  // Bumped to start the next duel of a match.
+  // Bumped to start the next duel of a match, or a retry / next level.
   const [duelIndex, setDuelIndex] = useState(0);
 
   const initial = useMemo<DuelState | null>(() => {
@@ -50,6 +60,23 @@ export default function DuelScreen() {
         dayNumber: day,
       });
     }
+    if (mode === 'level') {
+      if (!levelId || levelId > stats.levels.unlocked) return null;
+      if (activeLevel?.config.levelId === levelId && !activeLevel.outcome) return activeLevel;
+      const level = getLevel(levelId);
+      const attempt = stats.levels.attempts[levelId] ?? 0;
+      return createDuel({
+        answer: levelAnswer(levelId, attempt),
+        opponent: level.opponent,
+        mode: 'level',
+        hardMode: level.hardMode,
+        shotClockMs: level.shotClockMs,
+        seed: levelSeed(levelId, attempt),
+        levelId,
+        scouts: level.scouts,
+        tuning: level.tuning,
+      });
+    }
     if (!match) return null;
     if (activeQuick && !activeQuick.outcome) return activeQuick;
     const seed = randomSeed();
@@ -60,25 +87,46 @@ export default function DuelScreen() {
       hardMode: settings.hardMode,
       shotClockMs,
       seed,
+      scouts: QUICK_SCOUTS,
     });
-    // Only pick a duel on entry and when moving to the next duel of a match.
+    // Only pick a duel on entry and when moving to the next duel / level.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, duelIndex]);
+  }, [mode, levelId, duelIndex]);
 
-  if (!initial) return <Redirect href="/" />;
-  return <StandoffView key={initial.config.seed + duelIndex} initial={initial} onNext={() => setDuelIndex((i) => i + 1)} />;
+  if (!initial) return <Redirect href={mode === 'level' ? '/levels' : '/'} />;
+  return (
+    <StandoffView
+      key={initial.config.seed + duelIndex}
+      initial={initial}
+      onNext={() => setDuelIndex((i) => i + 1)}
+      onLevel={(id) => {
+        router.setParams({ id: String(id) });
+        setDuelIndex((i) => i + 1);
+      }}
+    />
+  );
 }
 
-function StandoffView({ initial, onNext }: { initial: DuelState; onNext(): void }) {
+interface ViewProps {
+  initial: DuelState;
+  onNext(): void;
+  onLevel(id: number): void;
+}
+
+function StandoffView({ initial, onNext, onLevel }: ViewProps) {
   const { c } = useTheme();
   const { width, height } = useWindowDimensions();
-  const { saveDaily, saveQuick, finishDuel, match } = useProfile();
+  const { saveDaily, saveQuick, saveLevel, finishDuel, match } = useProfile();
   const colorblind = useSettings((s) => s.colorblind);
   const [unlocked, setUnlocked] = useState<string[]>([]);
   const [matchOver, setMatchOver] = useState(false);
-  const isDaily = initial.config.mode === 'daily';
+  const { mode } = initial.config;
+  const level = initial.config.levelId ? getLevel(initial.config.levelId) : null;
 
-  const onChange = useCallback((s: DuelState) => (isDaily ? saveDaily(s) : saveQuick(s)), [isDaily, saveDaily, saveQuick]);
+  const onChange = useCallback(
+    (s: DuelState) => (mode === 'daily' ? saveDaily(s) : mode === 'level' ? saveLevel(s) : saveQuick(s)),
+    [mode, saveDaily, saveLevel, saveQuick],
+  );
   const onFinish = useCallback(
     (s: DuelState) => {
       const r = finishDuel(s);
@@ -90,7 +138,9 @@ function StandoffView({ initial, onNext }: { initial: DuelState; onNext(): void 
 
   const g = useStandoff({ initial, onChange, onFinish });
   const { state } = g;
-  const tile = Math.floor(Math.min(58, (width - 2 * space.base - 4 * 6) / 5, (height - 470) / 7));
+  const rivalName = g.profile.shortName;
+  const over = g.phase === 'result' && !!state.outcome;
+  const tile = Math.floor(Math.min(58, (width - 2 * space.base - 4 * 6) / 5, (height - 500) / state.maxRows));
 
   const walkAway = () => {
     if (state.outcome) return router.back();
@@ -100,8 +150,29 @@ function StandoffView({ initial, onNext }: { initial: DuelState; onNext(): void 
     ]);
   };
 
-  const clock = g.clockLeftMs !== null && state.config.shotClockMs !== null && !state.outcome ? Math.ceil(g.clockLeftMs / 1000) : null;
-  const title = isDaily ? `Daily #${state.config.dayNumber}` : match ? `Best of ${match.bestOf} · ${match.scores.you}–${match.scores.ai}` : 'Quick Duel';
+  const clock =
+    g.clockLeftMs !== null && state.config.shotClockMs !== null && !state.outcome ? Math.ceil(g.clockLeftMs / 1000) : null;
+  const title =
+    mode === 'daily'
+      ? `Daily #${state.config.dayNumber}`
+      : level
+        ? `Level ${level.id} · ${level.title}`
+        : match
+          ? `Best of ${match.bestOf} · ${match.scores.you}–${match.scores.ai}`
+          : 'Quick Duel';
+
+  // Who is waiting on whom, in plain words.
+  let status: { text: string; color: string } | null = null;
+  if (g.phase === 'aiming' && !state.outcome) {
+    if (g.youLocked && !g.rivalLocked) status = { text: `Locked in. Waiting for ${rivalName}…`, color: c.inkSoft };
+    else if (g.rivalLocked && !g.youLocked) status = { text: `${rivalName} has locked in. Your move!`, color: c.rival };
+    else if (!g.rivalLocked) status = { text: `${rivalName} is picking a word…`, color: c.inkSoft };
+  } else if (g.phase === 'reveal') {
+    status = { text: 'Both rows revealed', color: c.inkSoft };
+  }
+
+  const stars = level && state.outcome ? starsFor(level, state.outcome.winner === 'you', state.boards.you.solvedRow) : 0;
+  const hasNextLevel = level && stars > 0 && level.id < LEVEL_COUNT;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: state.suddenDeath && !state.outcome ? mix(c.canvas, c.dusk) : c.canvas }}>
@@ -109,7 +180,9 @@ function StandoffView({ initial, onNext }: { initial: DuelState; onNext(): void 
         <Pressable onPress={() => router.back()} hitSlop={12}>
           <Text style={{ color: c.ink, fontSize: 16, fontWeight: '600' }}>‹ Back</Text>
         </Pressable>
-        <Text style={{ color: c.ink, fontWeight: '700' }}>{title}</Text>
+        <Text style={{ color: c.ink, fontWeight: '700', flexShrink: 1 }} numberOfLines={1}>
+          {title}
+        </Text>
         {clock !== null ? (
           <Text style={{ color: clock <= 5 ? c.danger : c.inkSoft, fontWeight: '800', fontVariant: ['tabular-nums'] }}>⏱ {clock}s</Text>
         ) : !state.outcome ? (
@@ -121,93 +194,183 @@ function StandoffView({ initial, onNext }: { initial: DuelState; onNext(): void 
         )}
       </View>
 
-      <View style={[styles.rivalCard, { backgroundColor: c.surface, borderColor: c.hairline }]}>
-        <Avatar profile={g.profile} size={40} />
-        <View style={{ flex: 1, gap: 4 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Text style={{ color: c.ink, fontWeight: '700' }}>{g.profile.name}</Text>
-            {g.rivalLocked && !state.outcome && (
-              <View style={[styles.badge, { backgroundColor: c.rival }]}>
-                <Text style={styles.badgeText}>LOCKED</Text>
-              </View>
-            )}
+      {!over && (
+        <View style={[styles.rivalCard, { backgroundColor: c.surface, borderColor: g.rivalLocked ? c.rival : c.hairline }]}>
+          <Avatar profile={g.profile} size={40} />
+          <View style={{ flex: 1, gap: 4 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Text style={{ color: c.ink, fontWeight: '700' }}>{g.profile.name}</Text>
+              {g.rivalLocked && !state.outcome ? (
+                <View style={[styles.badge, { backgroundColor: c.rival }]}>
+                  <Text style={styles.badgeText}>LOCKED</Text>
+                </View>
+              ) : !state.outcome ? (
+                <Text style={{ color: c.inkSoft, fontSize: 12 }}>aiming…</Text>
+              ) : null}
+            </View>
+            <TauntBubble text={g.taunt?.text ?? null} id={g.taunt?.id ?? null} />
           </View>
-          <TauntBubble text={g.taunt?.text ?? null} id={g.taunt?.id ?? null} />
+          <RivalBoard
+            rows={g.rivalRows}
+            totalRows={state.maxRows}
+            typing={g.phase === 'aiming' && !g.rivalLocked ? g.rivalTyped : g.rivalLocked && g.phase !== 'reveal' ? 5 : null}
+          />
         </View>
-        <RivalBoard rows={g.rivalRows} totalRows={state.maxRows} />
-      </View>
+      )}
 
       {state.suddenDeath && !state.outcome && (
         <Text style={[styles.suddenDeath, { color: c.danger }]}>SUDDEN DEATH · one shot each</Text>
       )}
 
-      <View style={styles.boardArea}>
-        <Toast message={g.error?.message ?? null} id={g.error?.id ?? null} />
-        <Board
-          rows={g.yourRows}
-          totalRows={state.maxRows}
-          current={g.pendingGuess ?? (state.outcome ? null : g.input)}
-          currentLocked={g.youLocked}
-          revealingRow={g.revealingRow}
-          shakeKey={g.error?.id ?? null}
-          hint={state.hint}
-          celebrate={g.phase === 'result' && state.outcome?.winner === 'you'}
-          tileSize={tile}
-        />
-        {g.youLocked && !g.rivalLocked && g.phase === 'aiming' && (
-          <P soft center>Locked in. {g.profile.name} is aiming…</P>
-        )}
-        <CountdownOverlay beat={g.beat} />
-      </View>
-
-      {g.phase === 'result' && state.outcome ? (
-        <View style={[styles.result, { backgroundColor: c.surface, borderColor: c.hairline }]}>
-          <H size="title">{outcomeHeadline(state.outcome)}</H>
-          <P>
-            The word was <Text style={{ fontWeight: '800' }}>{state.config.answer.toUpperCase()}</Text>
-            {state.outcome.reason === 'photo-finish' &&
-              ` · you ${secs(state.boards.you.totalMs)} vs ${secs(state.boards.ai.totalMs)}`}
-          </P>
-          {unlocked.map((id) => (
-            <P key={id}>🏅 {getAchievement(id)?.name}: {getAchievement(id)?.description}</P>
-          ))}
-          {match && !isDaily && (
-            <P soft>
-              {matchOver
-                ? match.winner === 'you'
-                  ? `You took the match ${match.scores.you}–${match.scores.ai}!`
-                  : match.winner === 'ai'
-                    ? `${getOpponent(match.opponent).name} took the match ${match.scores.ai}–${match.scores.you}.`
-                    : 'The match ends level.'
-                : `Match: ${match.scores.you}–${match.scores.ai} (first to ${winsNeeded(match.bestOf)})`}
-            </P>
-          )}
+      {over ? (
+        <ScrollView contentContainerStyle={styles.resultScroll}>
+          <ResultPanel
+            state={state}
+            rivalName={rivalName}
+            unlocked={unlocked}
+            stars={level ? stars : null}
+            matchLine={
+              match && mode === 'quick'
+                ? matchOver
+                  ? match.winner === 'you'
+                    ? `You took the match ${match.scores.you}–${match.scores.ai}!`
+                    : match.winner === 'ai'
+                      ? `${getOpponent(match.opponent).name} took the match ${match.scores.ai}–${match.scores.you}.`
+                      : 'The match ends level.'
+                  : `Match: ${match.scores.you}–${match.scores.ai} (first to ${winsNeeded(match.bestOf)})`
+                : null
+            }
+          />
           <View style={styles.resultButtons}>
             <View style={{ flex: 1 }}>
               <Button kind="secondary" label="Share" onPress={() => Share.share({ message: buildShareText(state, { colorblind }) })} />
             </View>
             <View style={{ flex: 1 }}>
-              {!isDaily && match && !matchOver ? (
+              {level ? (
+                hasNextLevel ? (
+                  <Button label={`Level ${level.id + 1}`} onPress={() => onLevel(level.id + 1)} />
+                ) : (
+                  <Button label="Retry" onPress={onNext} />
+                )
+              ) : mode === 'quick' && match && !matchOver ? (
                 <Button label="Next duel" onPress={onNext} />
               ) : (
                 <Button
                   label="Done"
                   onPress={() => {
-                    if (!isDaily) useProfile.getState().abandonMatch();
+                    if (mode === 'quick') useProfile.getState().abandonMatch();
                     router.back();
                   }}
                 />
               )}
             </View>
           </View>
-        </View>
+          {level && (
+            <View style={styles.resultButtons}>
+              {hasNextLevel && (
+                <View style={{ flex: 1 }}>
+                  <Button kind="secondary" label="Replay" onPress={onNext} />
+                </View>
+              )}
+              <View style={{ flex: 1 }}>
+                <Button kind="secondary" label="All levels" onPress={() => router.replace('/levels')} />
+              </View>
+            </View>
+          )}
+        </ScrollView>
       ) : (
-        <Keyboard keys={g.keys} disabled={!g.canType} onLetter={g.typeLetter} onBack={g.backspace} onFire={g.submit} />
+        <>
+          <View style={styles.boardArea}>
+            <Toast message={g.error?.message ?? null} id={g.error?.id ?? null} />
+            <Board
+              rows={g.yourRows}
+              totalRows={state.maxRows}
+              current={g.pendingGuess ?? (state.outcome ? null : g.input)}
+              currentLocked={g.youLocked}
+              revealingRow={g.revealingRow}
+              shakeKey={g.error?.id ?? null}
+              hints={g.revealed}
+              celebrate={false}
+              tileSize={tile}
+            />
+            <CountdownOverlay beat={g.beat} />
+          </View>
+          <View style={styles.actionRow}>
+            <Text style={{ color: status?.color ?? c.inkSoft, fontWeight: '600', flex: 1 }} numberOfLines={1}>
+              {status?.text ?? ' '}
+            </Text>
+            {(state.config.scouts ?? 0) > 0 && (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Scout a letter, ${g.scoutsLeft} left`}
+                disabled={!g.canScout}
+                onPress={g.scout}
+                style={[styles.scout, { borderColor: c.you, opacity: g.canScout ? 1 : 0.4 }]}
+              >
+                <Text style={{ color: c.you, fontWeight: '700' }}>🔍 Scout · {g.scoutsLeft}</Text>
+              </Pressable>
+            )}
+          </View>
+          <Keyboard keys={g.keys} disabled={!g.canType} onLetter={g.typeLetter} onBack={g.backspace} onFire={g.submit} />
+        </>
       )}
     </SafeAreaView>
   );
 }
 
+interface ResultProps {
+  state: DuelState;
+  rivalName: string;
+  unlocked: string[];
+  stars: number | null;
+  matchLine: string | null;
+}
+
+/** End of a duel: who won, the word, both boards with the rival's letters finally shown. */
+function ResultPanel({ state, rivalName, unlocked, stars, matchLine }: ResultProps) {
+  const { c } = useTheme();
+  const outcome = state.outcome!;
+  const youTile = 24;
+  return (
+    <View style={[styles.result, { backgroundColor: c.surface, borderColor: c.hairline }]}>
+      <H size="title">{outcomeHeadline(outcome)}</H>
+      {stars !== null && (
+        <Text style={{ fontSize: 30, color: stars ? c.present : c.hairline }} accessibilityLabel={`${stars} of 3 stars`}>
+          {'★'.repeat(stars)}
+          <Text style={{ color: c.hairline }}>{'★'.repeat(3 - stars)}</Text>
+        </Text>
+      )}
+      <P>
+        The word was <Text style={{ fontWeight: '800' }}>{state.config.answer.toUpperCase()}</Text>
+        {outcome.reason === 'photo-finish' &&
+          ` · you ${secs(state.boards.you.totalMs)} vs ${secs(state.boards.ai.totalMs)}`}
+      </P>
+
+      <View style={styles.boards}>
+        <View style={styles.boardCol}>
+          <Text style={[styles.boardLabel, { color: c.you }]}>You · {rowsText(state.boards.you.solvedRow)}</Text>
+          <RivalBoard rows={state.boards.you.rows} totalRows={state.boards.you.rows.length} cell={youTile} showLetters />
+        </View>
+        <View style={styles.boardCol}>
+          <Text style={[styles.boardLabel, { color: c.rival }]}>
+            {rivalName} · {rowsText(state.boards.ai.solvedRow)}
+          </Text>
+          <RivalBoard rows={state.boards.ai.rows} totalRows={state.boards.ai.rows.length} cell={youTile} showLetters />
+        </View>
+      </View>
+      {(state.scouted?.length ?? 0) > 0 && <P soft>You scouted {state.scouted.length} letter{state.scouted.length > 1 ? 's' : ''}.</P>}
+
+      {unlocked.map((id) => (
+        <P key={id}>
+          🏅 {getAchievement(id)?.name}: {getAchievement(id)?.description}
+        </P>
+      ))}
+      {matchLine && <P soft>{matchLine}</P>}
+    </View>
+  );
+}
+
+const rowsText = (row: number | null) => (row === null ? 'missed' : row > 6 ? 'sudden death' : `${row}/6`);
 const secs = (ms: number) => `${(ms / 1000).toFixed(2)}s`;
 
 /** Tints the canvas slightly toward another color (sudden death dusk). */
@@ -218,21 +381,41 @@ function mix(a: string, b: string, t = 0.12): string {
 }
 
 const styles = StyleSheet.create({
-  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: space.base, paddingVertical: space.sm },
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: space.sm,
+    paddingHorizontal: space.base,
+    paddingVertical: space.sm,
+  },
   rivalCard: {
     marginHorizontal: space.base,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderRadius: radius.card,
     padding: space.md,
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.md,
-    minHeight: 96,
+    minHeight: 110,
   },
   badge: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
   badgeText: { color: '#fff', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
   suddenDeath: { textAlign: 'center', fontWeight: '800', marginTop: space.sm, letterSpacing: 1 },
   boardArea: { flex: 1, justifyContent: 'center', gap: space.sm, paddingVertical: space.sm },
-  result: { margin: space.base, borderWidth: 1, borderRadius: radius.panel, padding: space.base, gap: space.sm },
-  resultButtons: { flexDirection: 'row', gap: space.sm, marginTop: space.xs },
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    paddingHorizontal: space.base,
+    paddingBottom: space.sm,
+    minHeight: 40,
+  },
+  scout: { borderWidth: 1.5, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
+  resultScroll: { padding: space.base, gap: space.sm },
+  result: { borderWidth: 1, borderRadius: radius.panel, padding: space.base, gap: space.sm },
+  resultButtons: { flexDirection: 'row', gap: space.sm },
+  boards: { flexDirection: 'row', justifyContent: 'space-around', marginVertical: space.sm },
+  boardCol: { alignItems: 'center', gap: 6 },
+  boardLabel: { fontWeight: '800', fontSize: 13 },
 });

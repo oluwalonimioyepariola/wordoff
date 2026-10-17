@@ -1,12 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  canScout,
   createBrain,
   DuelState,
   forfeit as forfeitDuel,
   keyboardMarks,
   lockIn,
+  Mark,
+  revealedToYou,
   rowStrength,
+  scout as scoutDuel,
   scoredHistory,
+  scoutsLeft,
   TauntEvent,
   validateGuess,
   WORD_LENGTH,
@@ -46,9 +51,11 @@ export function useStandoff({ initial, onChange, onFinish }: Options) {
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const brain = useMemo(
-    () => createBrain(initial.config.opponent, initial.config.seed),
-    [initial.config.opponent, initial.config.seed],
+    () => createBrain(initial.config.opponent, initial.config.seed, initial.config.tuning),
+    [initial.config.opponent, initial.config.seed, initial.config.tuning],
   );
+  /** How many of the rival's five letters are "typed" while it aims (0–5). */
+  const [rivalTyped, setRivalTyped] = useState(0);
 
   const later = (ms: number, fn: () => void) => {
     timers.current.push(setTimeout(fn, ms));
@@ -138,12 +145,23 @@ export function useStandoff({ initial, onChange, onFinish }: Options) {
     const round = state.round;
     const think = brain.thinkTimeMs(round);
     const guess = brain.nextGuess(scoredHistory(state.boards.ai), state.hint);
+    const started = Date.now();
+    setRivalTyped(0);
+    // Show the rival "typing" its guess, a letter at a time, while it aims.
+    const typing = setInterval(() => {
+      setRivalTyped(Math.min(WORD_LENGTH, Math.floor(((Date.now() - started) / think) * (WORD_LENGTH + 1))));
+    }, 120);
     const t = setTimeout(() => {
+      clearInterval(typing);
+      setRivalTyped(WORD_LENGTH);
       const cur = stateRef.current;
       if (cur.round !== round || cur.locked.ai || cur.outcome) return;
       afterLock(cur, lockIn(cur, 'ai', guess, think));
     }, think);
-    return () => clearTimeout(t);
+    return () => {
+      clearTimeout(t);
+      clearInterval(typing);
+    };
     // Re-run only when a new round starts or play resumes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.round, phase]);
@@ -214,6 +232,17 @@ export function useStandoff({ initial, onChange, onFinish }: Options) {
     fire(input);
   }, [fire, input]);
 
+  const scout = useCallback(() => {
+    const cur = stateRef.current;
+    if (phase !== 'aiming' || !canScout(cur)) return;
+    const next = scoutDuel(cur);
+    commit(next);
+    haptic('lock');
+    const index = next.scouted[next.scouted.length - 1];
+    const ordinal = ['1st', '2nd', '3rd', '4th', '5th'][index];
+    setError({ message: `Scouted: ${ordinal} letter is ${cur.config.answer[index].toUpperCase()}`, id: Date.now() });
+  }, [commit, phase]);
+
   const forfeit = useCallback(() => {
     const cur = stateRef.current;
     if (cur.outcome) return;
@@ -230,10 +259,12 @@ export function useStandoff({ initial, onChange, onFinish }: Options) {
   const visibleAi = hideLast ? state.boards.ai.rows.slice(0, -1) : state.boards.ai.rows;
   const pendingYou = hideLast ? (state.boards.you.rows.at(-1)?.guess ?? '') : (state.locked.you?.guess ?? null);
 
-  const keys = useMemo(
-    () => keyboardMarks(scoredHistory({ ...state.boards.you, rows: visibleYou })),
-    [state.boards.you, visibleYou],
-  );
+  const revealed = revealedToYou(state);
+  const keys = useMemo(() => {
+    const marks: Record<string, Mark> = keyboardMarks(scoredHistory({ ...state.boards.you, rows: visibleYou }));
+    for (const { letter } of revealed) marks[letter] = 'correct';
+    return marks;
+  }, [state.boards.you, visibleYou, revealed]);
 
   return {
     state,
@@ -251,6 +282,12 @@ export function useStandoff({ initial, onChange, onFinish }: Options) {
     /** Your locked-in guess waiting for the reveal (letters only, no colors). */
     pendingGuess: pendingYou,
     rivalLocked: !!state.locked.ai || phase === 'countdown',
+    rivalTyped,
+    /** Answer letters revealed to you (scouted, plus the sudden-death hint). */
+    revealed,
+    scoutsLeft: scoutsLeft(state),
+    canScout: phase === 'aiming' && canScout(state),
+    scout,
     youLocked: !!state.locked.you || phase === 'countdown',
     revealingRow: phase === 'reveal' ? state.boards.you.rows.length - 1 : null,
     keys,

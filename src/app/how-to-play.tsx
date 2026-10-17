@@ -49,6 +49,16 @@ export default function HowToPlay() {
       </Card>
 
       <Card>
+        <H>Stuck? Scout</H>
+        <P>Tap 🔍 Scout to reveal one letter of the word. It costs 10 seconds on your clock, which only matters if you both solve on the same row. Levels and Quick Duels give you scouts; the Daily doesn’t.</P>
+      </Card>
+
+      <Card>
+        <H>Levels</H>
+        <P>New to it? Start with Level mode: 30 levels from easy words against a clumsy rookie up to The Sheriff at high noon. Win to unlock the next level.</P>
+      </Card>
+
+      <Card>
         <H>Every day</H>
         <P>A new Daily Standoff drops at midnight: same word and same rival for everyone. Play daily to grow your 🔥 streak. Every 7 days earns a ❄️ freeze that saves your streak if you miss a day.</P>
       </Card>
