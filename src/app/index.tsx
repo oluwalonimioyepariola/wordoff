@@ -1,8 +1,8 @@
 import { Redirect, router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Avatar, Button, Card, H, P, Pips, Segmented } from '../components/ui';
+import { Avatar, Button, Card, Felt, H, Icon, LinkRow, P, Pips, Segmented } from '../components/ui';
 import {
   BestOf,
   buildShareText,
@@ -22,7 +22,7 @@ import {
 } from '../engine';
 import { useProfile } from '../store/profile';
 import { useSettings } from '../store/settings';
-import { space, useTheme } from '../theme';
+import { fonts, radius, space, useTheme } from '../theme';
 
 const STREAK_COPY = {
   active: 'Today’s standoff is done. See you tomorrow.',
@@ -58,73 +58,96 @@ export default function Home() {
     <SafeAreaView style={{ flex: 1, backgroundColor: c.canvas }}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
-          <H size="display">WORDOFF</H>
-          <P soft>A word standoff. One word, one board, two shooters.</P>
-        </View>
-
-        <Card>
-          <View style={styles.rowBetween}>
-            <View>
-              <Text style={[styles.big, { color: c.ink }]}>🔥 {streak.streak}</Text>
-              <Text style={{ color: c.inkSoft }}>day streak · best {stats.daily.bestPlayStreak}</Text>
+          <View style={{ flex: 1 }}>
+            <H size="display">WORDOFF</H>
+            <P soft>One word, one table, two shooters.</P>
+          </View>
+          <View style={styles.tally} accessibilityLabel={`${streak.streak} day streak, ${stats.daily.freezes} streak freezes`}>
+            <View style={styles.tallyItem}>
+              <Icon name="fire" size={22} color={c.rival} />
+              <Text style={[styles.tallyNum, { color: c.ink }]}>{streak.streak}</Text>
             </View>
-            <View style={{ alignItems: 'flex-end' }}>
-              <Text style={[styles.big, { color: c.you }]}>❄️ {stats.daily.freezes}</Text>
-              <Text style={{ color: c.inkSoft }}>streak freezes</Text>
+            <View style={styles.tallyItem}>
+              <Icon name="snowflake" size={20} color={c.you} />
+              <Text style={[styles.tallyNum, { color: c.ink }]}>{stats.daily.freezes}</Text>
             </View>
           </View>
-          <P soft>{STREAK_COPY[streak.status]}</P>
-        </Card>
+        </View>
+        <P soft>
+          {STREAK_COPY[streak.status]} Best streak {stats.daily.bestPlayStreak}.
+        </P>
 
-        <Card>
+        <Felt>
           <View style={styles.rowBetween}>
-            <H>Daily Standoff #{today}</H>
-            <Pips n={todayRival.difficulty} />
+            <H size="title" color={c.feltInk}>
+              Daily Standoff #{today}
+            </H>
+            <Pips n={todayRival.difficulty} onFelt />
           </View>
           <View style={styles.rival}>
-            <Avatar profile={todayRival} />
+            <Avatar profile={todayRival} size={50} />
             <View style={{ flex: 1 }}>
-              <Text style={{ color: c.ink, fontWeight: '700' }}>{todayRival.name}</Text>
-              <Text style={{ color: c.inkSoft }}>{todayRival.title}</Text>
+              <Text style={{ color: c.feltInk, fontFamily: fonts.slabSemi, fontSize: 18 }}>vs {todayRival.name}</Text>
+              <Text style={{ color: c.feltInkSoft, fontSize: 15 }}>{todayRival.title}</Text>
             </View>
           </View>
-          <P soft>
-            Standoff rules: you each play your own board and fire at once. Everyone gets the same word and the same{' '}
-            {todayRival.shortName} game today, so compare cards with friends.
+          <P color={c.feltInkSoft}>
+            Standoff rules: separate boards, both fire at once. Everyone faces the same word and the same{' '}
+            {todayRival.shortName} today.
           </P>
           {record ? (
             <>
-              <P>
-                {record.result === 'win' ? 'You won' : record.result === 'loss' ? 'You lost' : 'Draw'} ·{' '}
-                {record.answer.toUpperCase()}
-              </P>
-              <P soft>Next standoff in {formatCountdown(countdown)}</P>
-              {daily && <Button kind="secondary" label="Share result" onPress={() => Share.share({ message: buildShareText(daily, { colorblind: settings.colorblind }) })} />}
+              <View style={[styles.verdict, { backgroundColor: c.card }]}>
+                <Text style={[styles.verdictText, { color: record.result === 'win' ? c.you : record.result === 'loss' ? c.rival : c.cardInk }]}>
+                  {record.result === 'win' ? 'You won' : record.result === 'loss' ? 'You lost' : 'Draw'}
+                </Text>
+                <Text style={{ color: c.cardInk, fontFamily: fonts.slab, fontSize: 18, letterSpacing: 2 }}>{record.answer.toUpperCase()}</Text>
+              </View>
+              <P color={c.feltInkSoft}>Next standoff in {formatCountdown(countdown)}</P>
+              {daily && (
+                <Button
+                  kind="secondary"
+                  onFelt
+                  icon="share-variant"
+                  label="Share your card"
+                  onPress={() => Share.share({ message: buildShareText(daily, { colorblind: settings.colorblind }) })}
+                />
+              )}
             </>
           ) : (
             <Button
-              label={daily ? `Resume (row ${daily.round + 1})` : 'Draw!'}
+              label={daily ? `Resume, row ${daily.round + 1}` : 'Draw'}
+              icon="pistol"
               onPress={() => router.push({ pathname: '/duel', params: { mode: 'daily' } })}
             />
           )}
-        </Card>
+        </Felt>
 
         <Card>
           <View style={styles.rowBetween}>
             <H>Level mode</H>
-            <Text style={{ color: c.present, fontWeight: '800' }}>
-              ★ {totalStars(stats)}/{LEVEL_COUNT * 3}
-            </Text>
+            <View style={styles.tallyItem}>
+              <Icon name="star-four-points" size={18} color={c.brass} />
+              <Text style={[styles.starCount, { color: c.ink }]}>
+                {totalStars(stats)}/{LEVEL_COUNT * 3}
+              </Text>
+            </View>
           </View>
-          <P>
-            Level {stats.levels.unlocked}: {getLevel(stats.levels.unlocked).title}
-          </P>
+          <Text style={[styles.levelTitle, { color: c.ink }]}>
+            Level {stats.levels.unlocked} · {getLevel(stats.levels.unlocked).title}
+          </Text>
           <P soft>{levelBlurb(getLevel(stats.levels.unlocked))}</P>
-          <Button
-            label={`Play level ${stats.levels.unlocked}`}
-            onPress={() => router.push({ pathname: '/duel', params: { mode: 'level', id: String(stats.levels.unlocked) } })}
-          />
-          <Button kind="secondary" label="All levels" onPress={() => router.push('/levels')} />
+          <View style={styles.buttonRow}>
+            <View style={{ flex: 1 }}>
+              <Button kind="secondary" label="All levels" onPress={() => router.push('/levels')} />
+            </View>
+            <View style={{ flex: 1.3 }}>
+              <Button
+                label={`Play level ${stats.levels.unlocked}`}
+                onPress={() => router.push({ pathname: '/duel', params: { mode: 'level', id: String(stats.levels.unlocked) } })}
+              />
+            </View>
+          </View>
         </Card>
 
         <Card>
@@ -140,7 +163,7 @@ export default function Home() {
           ) : (
             <>
               <Segmented<OpponentId>
-                options={OPPONENT_ORDER.map((id) => ({ label: getOpponent(id).name.split(' ').at(-1)!, value: id }))}
+                options={OPPONENT_ORDER.map((id) => ({ label: getOpponent(id).shortName.replace('The ', ''), value: id }))}
                 value={rival}
                 onChange={setRival}
               />
@@ -164,7 +187,7 @@ export default function Home() {
               />
               <Button
                 kind="rival"
-                label="Start duel"
+                label={`Call out ${getOpponent(rival).shortName}`}
                 onPress={() => {
                   startMatch(rival, bestOf);
                   router.push({ pathname: '/duel', params: { mode: 'quick' } });
@@ -174,30 +197,29 @@ export default function Home() {
           )}
         </Card>
 
-        <View style={styles.links}>
-          {[
-            ['Stats', '/stats'],
-            ['Achievements', '/achievements'],
-            ['History', '/history'],
-            ['How to duel', '/how-to-play'],
-            ['Settings', '/settings'],
-          ].map(([label, href]) => (
-            <Pressable key={href} onPress={() => router.push(href as never)} style={[styles.link, { borderColor: c.hairline }]}>
-              <Text style={{ color: c.ink, fontWeight: '600' }}>{label}</Text>
-            </Pressable>
-          ))}
-        </View>
+        <Card style={{ paddingVertical: space.xs }}>
+          <LinkRow label="Stats" icon="chart-bar" onPress={() => router.push('/stats')} />
+          <LinkRow label="Achievements" icon="medal-outline" onPress={() => router.push('/achievements')} />
+          <LinkRow label="History" icon="calendar-month-outline" onPress={() => router.push('/history')} />
+          <LinkRow label="How to duel" icon="help-circle-outline" onPress={() => router.push('/how-to-play')} />
+          <LinkRow label="Settings" icon="cog-outline" onPress={() => router.push('/settings')} last />
+        </Card>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { padding: space.base, gap: space.md },
-  header: { gap: 2, marginBottom: space.xs },
+  scroll: { padding: space.base, gap: space.md, paddingBottom: space.xxl },
+  header: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginTop: space.sm },
+  tally: { flexDirection: 'row', gap: space.md },
+  tallyItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  tallyNum: { fontFamily: fonts.slab, fontSize: 22 },
   rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  rival: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  big: { fontSize: 24, fontWeight: '800' },
-  links: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
-  link: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8 },
+  rival: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginVertical: space.xs },
+  verdict: { borderRadius: radius.card, paddingVertical: space.sm, paddingHorizontal: space.md, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  verdictText: { fontFamily: fonts.slab, fontSize: 18 },
+  starCount: { fontFamily: fonts.slab, fontSize: 17 },
+  levelTitle: { fontFamily: fonts.slabSemi, fontSize: 18 },
+  buttonRow: { flexDirection: 'row', gap: space.sm, marginTop: space.xs },
 });
