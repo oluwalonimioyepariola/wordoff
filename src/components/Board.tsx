@@ -21,7 +21,6 @@ interface Props {
 }
 
 export function Board({ rows, totalRows, current, currentLocked, revealingRow, shakeKey, hints, celebrate, tileSize, length }: Props) {
-  const { c } = useTheme();
   const currentIndex = rows.length;
 
   return (
@@ -34,9 +33,7 @@ export function Board({ rows, totalRows, current, currentLocked, revealingRow, s
           <ShakeRow key={r} shakeKey={isCurrent ? shakeKey : null} lifted={isCurrent && currentLocked}>
             {Array.from({ length }, (_, i) => {
               if (row) {
-                if (row.guess === null) {
-                  return <View key={i} style={[styles.blank, { width: tileSize, height: tileSize, borderColor: c.inkSoft }]} />;
-                }
+                if (row.guess === null) return <Tile key={i} size={tileSize} letter="" faceDown />;
                 return (
                   <Tile
                     key={i}
@@ -82,11 +79,10 @@ function ShakeRow({ children, shakeKey, lifted }: { children: React.ReactNode; s
   }, [lifted, y]);
 
   const style = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }, { translateY: y.value }] }));
-  return <Animated.View style={[styles.row, style, lifted && { opacity: 0.85 }]}>{children}</Animated.View>;
+  return <Animated.View style={[styles.row, style, lifted && { opacity: 0.9 }]}>{children}</Animated.View>;
 }
 
 const styles = StyleSheet.create({
-  board: { gap: 6, alignItems: 'center' },
-  row: { flexDirection: 'row', gap: 6 },
-  blank: { borderWidth: 2, borderStyle: 'dashed', borderRadius: 8 },
+  board: { gap: 7, alignItems: 'center' },
+  row: { flexDirection: 'row', gap: 7 },
 });
