@@ -1,13 +1,18 @@
+import { Ultra_400Regular } from '@expo-google-fonts/ultra';
+import { ZillaSlab_600SemiBold, ZillaSlab_700Bold } from '@expo-google-fonts/zilla-slab';
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useHydrated } from '../store/hydration';
-import { useTheme } from '../theme';
+import { fonts, useTheme } from '../theme';
 
 export default function RootLayout() {
-  const ready = useHydrated();
+  const hydrated = useHydrated();
+  const [fontsLoaded] = useFonts({ Ultra_400Regular, ZillaSlab_700Bold, ZillaSlab_600SemiBold });
   const { c, dark } = useTheme();
+  const ready = hydrated && fontsLoaded;
 
   return (
     <SafeAreaProvider>
@@ -22,7 +27,8 @@ export default function RootLayout() {
             headerStyle: { backgroundColor: c.canvas },
             headerTintColor: c.ink,
             headerShadowVisible: false,
-            headerTitleStyle: { fontWeight: '700' },
+            headerTitleStyle: { fontFamily: fonts.slab, fontSize: 19 },
+            headerBackButtonDisplayMode: 'minimal',
             contentStyle: { backgroundColor: c.canvas },
           }}
         >
