@@ -2,182 +2,227 @@
 version: alpha
 name: Wordoff
 description: >-
-  Wordoff is a word standoff: you and an AI rival chase the same secret word on
-  separate boards and reveal each round at the same moment. The surface keeps a
-  warm, friendly base (cream canvas, warm charcoal ink, flat soft-rounded
-  shapes) and adds what a duel needs: two opposing side colors, a dark mode,
-  game tiles, and a motion system built around the "DRAW!" reveal.
-lineage: >-
-  Adapted from a Headspace-style DESIGN.md (kept for reference in
-  docs/reference/headspace-DESIGN.md). Kept: warm canvas, warm charcoal ink,
-  flat surfaces, 8/16/24/32 radii. Changed: open font (Inter) instead of a
-  proprietary face, two side colors instead of one CTA color, original duelist
-  characters instead of another brand's mascots, plus dark mode, tile/keyboard
-  specs and motion tokens that the original never had.
-
+  Saloon Card Table. Every duel is dealt across a saloon table: brown baize
+  felt between two seats, a walnut rail around it, cream card-stock tiles that
+  turn face up, brass for the primary action and scout chips. Ink navy is
+  your seat, oxblood is the rival's. Ultra wood-type for display, Zilla Slab
+  for tiles and headings, the platform face for body text.
 colors:
-  # Base: warm and calm, so the tension comes from the game, not the chrome.
-  canvas: "#f9f4f2"
-  surface: "#ffffff"
-  ink: "#2d2c2b"
-  ink-soft: "#63605d"
-  hairline: "#e2ded9"
-  # The two sides of the standoff. Never swap them; never use them for anything else.
-  you: "#0061ef"
-  you-soft: "#dce8fd"
-  rival: "#d6336c"
-  rival-soft: "#fadbe6"
-  # Tile feedback
-  correct: "#02873e"
-  present: "#ffce00"
-  absent: "#8a8580"
-  on-correct: "#ffffff"
-  on-present: "#2d2c2b"
-  on-absent: "#ffffff"
-  # Colorblind mode replaces correct/present
-  correct-cb: "#f5793a"
-  present-cb: "#85c0f9"
-  # Moments
-  danger: "#c92a2a" # shot clock under 5s, sudden death banner
-  dusk: "#3b197f" # sudden death backdrop tint
-
-colors-dark:
-  canvas: "#1b1a19"
-  surface: "#262523"
-  ink: "#f4efe9"
-  ink-soft: "#a8a29b"
-  hairline: "#3a3835"
-  you: "#4d8ef7"
-  you-soft: "#1d2c48"
-  rival: "#f06595"
-  rival-soft: "#4a1f30"
-  correct: "#2b9a52"
-  present: "#e6b800"
-  absent: "#4a4744"
-
+  canvas: "#efe3cb"
+  surface: "#f8efdd"
+  ink: "#2e1d13"
+  ink-soft: "#6b5240"
+  hairline: "#d8c6a5"
+  felt: "#5a3a24"
+  felt-deep: "#472d1b"
+  felt-ink: "#f1e3c6"
+  felt-ink-soft: "#c9b18c"
+  walnut: "#2e1d13"
+  walnut-ink: "#efe3cb"
+  card: "#f6ead2"
+  card-edge: "#cdb48a"
+  card-back: "#7d2a22"
+  you: "#24344f"
+  rival: "#9e2b25"
+  brass: "#b8862b"
+  brass-deep: "#8f6519"
+  on-brass: "#24170e"
+  correct: "#4f6b2e"
+  present: "#c8962e"
+  absent: "#8a7562"
+  danger: "#b33a1f"
 typography:
-  family: "Inter, system-ui, sans-serif"
-  weights: [400, 500, 700, 800]
-  display: { size: 40, weight: 800, tracking: -1.2, use: "DRAW!, result headline" }
-  title: { size: 28, weight: 700, tracking: -0.6, use: "screen titles" }
-  heading: { size: 20, weight: 700, tracking: -0.3, use: "card titles, rival names" }
-  body: { size: 16, weight: 400, lineHeight: 1.5 }
-  label: { size: 14, weight: 700, use: "buttons, keyboard keys" }
-  caption: { size: 12, weight: 500, use: "meta, timers, stat labels" }
-  tile: { size: 30, weight: 800, transform: uppercase }
-  tile-mini: { size: 0, use: "rival board shows color only, never letters" }
-
+  display:
+    fontFamily: "Ultra"
+    fontSize: 40px
+    fontWeight: 400
+    letterSpacing: "0.5px"
+  headline:
+    fontFamily: "Zilla Slab"
+    fontSize: 28px
+    fontWeight: 700
+  title:
+    fontFamily: "Zilla Slab"
+    fontSize: 21px
+    fontWeight: 700
+  tile:
+    fontFamily: "Zilla Slab"
+    fontSize: 54%
+    fontWeight: 700
+  key:
+    fontFamily: "Zilla Slab"
+    fontSize: 19px
+    fontWeight: 700
+  body:
+    fontFamily: "system-ui"
+    fontSize: 16px
+    fontWeight: 400
+    lineHeight: 1.45
+  label:
+    fontFamily: "Zilla Slab"
+    fontSize: 11px
+    fontWeight: 700
+    letterSpacing: "1px"
 rounded:
-  tile: 8
-  key: 8
-  card: 16
-  panel: 24
-  button: 32
-  pill: 999
-
-spacing: [4, 8, 12, 16, 24, 32, 48]
-
-motion:
-  # Durations in ms. With reduced motion on, every one of these becomes a 150ms fade.
-  key-press: 80
-  tile-pop: { duration: 100, scale: 1.12 }
-  tile-flip: { half: 220, stagger: 110 }
-  row-shake: { duration: 420, distance: 8, cycles: 3 }
-  countdown-beat: 550 # "3", "2", "1"
-  draw-slam: { spring: { damping: 12, stiffness: 220 }, overshoot: 1.15 }
-  win-bounce: { duration: 260, stagger: 80, lift: 18 }
-  lose-dim: { duration: 400, opacity: 0.45 }
-  taunt-bubble: { in: 200, hold: 2600, out: 200 }
-  shot-clock-pulse: { under: 5000, period: 500 }
+  tile: 6px
+  key: 6px
+  card: 12px
+  button: 14px
+  panel: 18px
+  pill: 999px
+spacing:
+  xs: 4px
+  sm: 8px
+  md: 12px
+  base: 16px
+  lg: 24px
+  xl: 32px
+  xxl: 48px
+components:
+  button-primary:
+    backgroundColor: "{colors.brass}"
+    textColor: "{colors.on-brass}"
+    typography: "{typography.title}"
+    rounded: "{rounded.button}"
+    height: 48px
+  button-secondary:
+    backgroundColor: "transparent"
+    textColor: "{colors.ink}"
+    typography: "{typography.title}"
+    rounded: "{rounded.button}"
+    height: 48px
+  button-rival:
+    backgroundColor: "{colors.rival}"
+    textColor: "{colors.card}"
+    typography: "{typography.title}"
+    rounded: "{rounded.button}"
+    height: 48px
+  tile-card:
+    backgroundColor: "{colors.card}"
+    textColor: "{colors.ink}"
+    typography: "{typography.tile}"
+    rounded: "{rounded.tile}"
+  key:
+    backgroundColor: "{colors.card}"
+    textColor: "{colors.ink}"
+    typography: "{typography.key}"
+    rounded: "{rounded.key}"
+    height: 54px
+  key-fire:
+    backgroundColor: "{colors.brass}"
+    textColor: "{colors.on-brass}"
+    typography: "{typography.display}"
+    rounded: "{rounded.key}"
+    height: 54px
+  felt-panel:
+    backgroundColor: "{colors.felt}"
+    textColor: "{colors.felt-ink}"
+    rounded: "{rounded.panel}"
+    padding: 16px
+  paper-section:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.card}"
+    padding: 16px
 ---
 
-## The feeling
+# Design System: Wordoff
 
-Wordoff is a duel, not a meditation. The chrome stays warm and quiet (cream
-canvas, charcoal ink, flat shapes) so that the tension lives in the game
-itself: the lock-in, the pause, the count, and the reveal.
+## Overview
 
-Every screen answers one question: **who's ahead?** That's why the two sides get
-their own colors and nothing else is allowed to use them.
+**Creative North Star: "The Saloon Card Table"**
 
-- **You are blue** (`you`). Your board, your timer, your score, your name.
-- **The rival is pink** (`rival`). Their mini-board, their "locked" badge,
-  their taunts, their score.
-- Green, yellow and gray belong to the tiles only.
+Wordoff is a word standoff, and every duel is dealt across a saloon table. The
+board is the felt between two seats; each guess is a row of cream cards that
+turn face up. The rival sits across the table on the walnut rail; you sit at
+the near edge, with your brass scout chips in front of you. Paper screens
+(home, levels, stats, settings) are the cream card stock the cards are cut
+from, and a piece of felt appears there wherever a table is in play (today's
+Daily on the home screen).
 
-## Layout of a standoff
+The world contributes type, palette, density and one signature move. It never
+replaces native navigation, back gestures, switches, alerts or the share sheet.
 
-```
-┌──────────────────────────────────┐
-│ ◀  Daily #170   ★ 12  ⏱ 0:18     │  top bar: back, puzzle, streak, shot clock
-│ ┌──────────┐            ▪▪▪▪▪    │  rival card (pink): avatar, name, mini board
-│ │ The      │  "Inevitable."▪▪▪▪▪ │  (colors only) + taunt bubble
-│ │ Sheriff  │  ● LOCKED     ▫▫▫▫▫ │
-│ └──────────┘                     │
-│                                  │
-│      ▢ ▢ ▢ ▢ ▢                   │  your board (blue accents), full size
-│      ▢ ▢ ▢ ▢ ▢                   │
-│      ...                         │
-│                                  │
-│  Q W E R T Y U I O P             │  keyboard
-│   A S D F G H J K L              │
-│  FIRE  Z X C V B N M  ⌫          │  Enter is labelled FIRE
-└──────────────────────────────────┘
-```
+**Key Characteristics:**
+- Brown baize felt is the duel ground in light and dark mode; only the paper screens flip.
+- Two seats, hard halves: ink navy for you, oxblood for the rival, never mixed and never used for anything else.
+- Cards, not tiles: cream card stock with an edge and a soft offset shadow; a face-down card shows an oxblood back with a brass diamond.
+- Brass is the only action colour: the primary button, the FIRE key, scout chips, stars.
+- Hierarchy by scale: DRAW!, the wordmark and the cards are large; everything else is small.
+
+## Colors
+
+### Primary
+- **Brass** (`brass` #b8862b): primary buttons, the FIRE key, scout chips, level stars. Text on brass is `on-brass` (#24170e).
+
+### Seats
+- **Ink navy** (`you` #24344f): your seat chip, your status dot, wins in history.
+- **Oxblood** (`rival` #9e2b25): the rival's avatar, seat chip, AIMING/LOCKED badges, taunt slip border, losses.
+
+### Tile results
+- **Cactus** (`correct` #4f6b2e), **brass-yellow** (`present` #c8962e), **dusty taupe** (`absent` #8a7562). Colorblind mode swaps correct/present to orange `#d4721f` and blue `#5d8fc9`.
+
+### Neutral
+- **Felt** (`felt` #5a3a24), **walnut** (`walnut` #2e1d13), **card stock** (`card` #f6ead2), **paper** (`canvas` #efe3cb, `surface` #f8efdd), walnut ink (`ink` #2e1d13).
+- Dark mode: paper becomes walnut (#1f150e / #2a1d14) with cream ink; felt deepens to #3f2818; the navy lifts to #4f6fa6 and oxblood to #d9645a for contrast.
+
+### Named Rules
+**The Two Seats Rule.** Navy and oxblood belong to the two players only. Neutral UI uses ink, felt ink and hairline.
+
+**The One Brass Rule.** Brass means "act here". It is never decoration.
+
+## Typography
+
+**Display:** Ultra (wood-type slab), for the WORDOFF wordmark, DRAW!, result headlines and the FIRE key.
+**Slab:** Zilla Slab 600/700, for card letters, keys, headings, names and buttons.
+**Body:** the platform face (SF Pro / Roboto), for running text and controls.
+
+### Hierarchy
+- **Display** (Ultra 40, DRAW! at 58): one per screen at most.
+- **Headline** (Zilla Slab 700, 28): screen and panel titles.
+- **Title** (Zilla Slab 700, 21): section titles, rival names, buttons (17).
+- **Tile** (Zilla Slab 700, 54% of the card): card letters.
+- **Body** (system 16/23): explanations and status lines.
+- **Label** (Zilla Slab 700, 11, tracked 1px): badges only (AIMING, LOCKED, SUDDEN DEATH).
+
+## Layout
+
+The duel screen stacks three bands: the walnut rail (navigation and the rival's seat), the felt table (the board centred with seat chips on the left of each row, then your seat strip), and the walnut keyboard rail. Paper screens are a single scroll column with 16px gutters and 12–16px gaps.
+
+## Elevation & Depth
+
+Depth comes from material and a single soft shadow: cards and keys sit on the felt with a short offset shadow (0 2px, 3px blur). The DRAW! stamp casts the only large shadow. Paper sections are flat with a hairline border.
+
+## Shapes
+
+6px on cards and keys, 12px on paper sections, 14px on buttons, 18px on the felt table and felt panels, full round on chips and avatars. Seat chips use a dashed rim like a poker chip; scout chips use a solid cream rim.
 
 ## Components
 
-**Tile.** 1:1 square, `rounded.tile`, 2px `hairline` border while empty, ink
-border while filled, then flips to its feedback color. Letters in `tile` type.
+### Buttons
+Primary is brass with walnut-dark text in Zilla Slab. Secondary is an outline in ink (or felt ink on felt). Rival is oxblood with cream text, used only for calling out a rival in Quick Duel.
 
-**Rival mini-board.** 5×6 grid of 12px squares, colors only. It fills in at
-the same moment as your row flips. A row with no guess (a blank) shows as dashed.
+### Cards (tiles)
+Empty: a dashed outline in the felt. Typed: cream card. Face down: oxblood back with a brass diamond. Scored: turns over around its vertical axis to cactus, brass-yellow or taupe.
 
-**Keyboard key.** `rounded.key`, 56px tall, `label` type. It takes the best
-feedback color seen for that letter on *your* board only. The rival's letters
-are never shown.
+### Keyboard
+Cream keys on the walnut rail, scored like the cards; FIRE is the one brass key, set in Ultra; delete is a darker card-edge key with an icon.
 
-**Lock-in badge.** A pill in `rival` (or `you`) with "LOCKED". It appears the
-moment that side commits, so you can feel the pressure when the rival is waiting
-on you.
+### Seat chips and scout chips
+Each row on the shared board opens with the seat chip of whoever fires it (YOU in navy, the rival's initial in oxblood). Scouts are a stack of brass chips in your seat strip.
 
-**Shot clock.** A caption-sized timer in the top bar. Under 5 seconds it turns
-`danger` and pulses. At zero you fire a blank.
+### Navigation
+Native stack navigation with the platform back gesture; paper screens use a native grouped list (icon, label, chevron) for links.
 
-**Primary button.** `you` fill, white label, `rounded.button`, 48px tall.
-**Secondary button.** Surface fill, 1px ink border, `rounded.pill`.
+## Do's and Don'ts
 
-**Duelist avatars.** Original round characters, one per rival, drawn in each
-rival's accent. They replace photography and decoration. (Placeholder: colored
-circle with an initial until art exists.)
+### Do:
+- Keep the felt brown in both appearances.
+- Use cards for every letter on the table, including the result boards.
+- Use real icons (MaterialCommunityIcons) in one weight.
 
-## Signature moments
-
-1. **Lock-in.** Your row lifts 2px and gets a blue underline. If the rival
-   locked first, their badge is already showing.
-2. **Count.** "3 · 2 · 1" beats over a dimmed board (`countdown-beat`).
-3. **DRAW!** The word slams in (`draw-slam`), then your row flips tile by tile
-   while the rival's mini row fills in at the same time.
-4. **Strong row.** 3+ greens from either side triggers a taunt.
-5. **Sudden death.** The canvas tints toward `dusk`, a "SUDDEN DEATH" banner
-   appears in `danger`, and the revealed hint letter is pre-filled in green.
-6. **Result.** The winner's row bounces (`win-bounce`), the loser's board dims
-   (`lose-dim`). The headline uses `display` type.
-
-## Accessibility
-
-- Colorblind mode swaps `correct` and `present` for `correct-cb` and
-  `present-cb`, and the share card uses 🟧/🟦.
-- Reduced motion turns flips, slams and shakes into short fades. Information
-  is never conveyed by motion alone.
-- Every tile has an accessible label like "C, correct" or "R, in the word".
-- Tap targets are at least 44pt. Keyboard keys are 56pt tall.
-
-## Do / Don't
-
-- **Do** reserve blue for you and pink for the rival, everywhere.
-- **Do** keep surfaces flat. Depth comes from color and radius, not shadows.
-  The one exception is the DRAW! banner, which may cast a single shadow.
-- **Don't** show the rival's letters, ever. Only colors.
-- **Don't** add a third side color. Neutral UI uses ink and hairline.
-- **Don't** use another brand's mascots, fonts or illustrations.
+### Don't:
+- Don't use emoji or Unicode symbols as icons.
+- Don't put a small label or eyebrow above a heading; the heading carries its own weight.
+- Don't add a third side colour, or use navy/oxblood for neutral UI.
+- Don't fake felt or wood with gradients or noise; the material is carried by flat colour and the cards.
