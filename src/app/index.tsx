@@ -59,7 +59,7 @@ export default function Home() {
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
           <H size="display">WORDOFF</H>
-          <P soft>A word standoff. Same word, two boards, one draw.</P>
+          <P soft>A word standoff. One word, one board, two shooters.</P>
         </View>
 
         <Card>
