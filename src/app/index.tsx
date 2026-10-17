@@ -141,6 +141,14 @@ export default function Home() {
                 onChange={setRival}
               />
               <P soft>{getOpponent(rival).blurb}</P>
+              <Segmented<4 | 5>
+                options={[
+                  { label: '4 letters', value: 4 },
+                  { label: '5 letters', value: 5 },
+                ]}
+                value={settings.quickLength}
+                onChange={(v) => settings.set('quickLength', v)}
+              />
               <Segmented<BestOf>
                 options={[
                   { label: 'Single', value: 1 as BestOf },

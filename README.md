@@ -1,9 +1,9 @@
 # Wordoff
 
-A word standoff. You and an AI rival chase the **same secret word** on separate
-boards. Each round you both lock in a guess, the screen counts **3 · 2 · 1 ·
-DRAW!**, and both rows flip at once. You see the rival's colors, never their
-letters. Fewest guesses wins; same row goes to the faster aim.
+A word standoff. You and an AI rival chase the **same secret word** on one
+board, taking turns. Every guess is visible to both, and whoever lands the word
+first wins. Prefer more tension? Switch to the **split board**: separate boards,
+both lock in at once, **3 · 2 · 1 · DRAW!**, and you only see your rival's colors.
 
 Runs fully offline with React Native (Expo). No server, no account.
 
@@ -12,7 +12,12 @@ Runs fully offline with React Native (Expo). No server, no account.
 - **Daily Standoff.** One word per day (based on the local date), with the same
   word and the same rival for everyone. One attempt; progress is saved after
   every round, so closing the app can't re-roll it.
-- **Quick Duel.** Unlimited random words, played as a single duel or best of 3 or 5.
+- **Quick Duel.** Unlimited random words, 4 or 5 letters, played as a single duel
+  or best of 3 or 5. Shared or split board.
+- **Level mode.** 30 levels: 4-letter easy words against Rookie Rae first, then
+  5-letter words against Dusty and The Sheriff. Stars, unlocks, scouts. Tuned
+  against a simulated average player (~95% win rate early, ~40% at the end).
+- **Scouts.** Reveal one letter of the word, at a 10s time penalty.
 - **Three AI rivals.** Rookie Rae (loose, ~5.3 guesses), Dusty Vance (reads
   most clues, ~4.2), The Sheriff (maximises information, ~3.2). Each sees only
   its own feedback, gets sharper as rows run out, and talks trash.

@@ -1,12 +1,12 @@
 import { getOpponent } from './ai/opponents';
-import { Board, DuelState } from './duel';
+import { Board, DuelState, isShared, sharedRows, wordLengthOf } from './duel';
 import { Mark } from './types';
 
 const TILES: Record<'standard' | 'colorblind', Record<Mark, string>> = {
   standard: { correct: '🟩', present: '🟨', absent: '⬛' },
   colorblind: { correct: '🟧', present: '🟦', absent: '⬛' },
 };
-const BLANK_ROW = '💨💨💨💨💨';
+const blankRow = (length: number) => '💨'.repeat(length);
 
 function rowsUsed(board: Board): string {
   return board.solvedRow === null ? 'X' : board.solvedRow > 6 ? 'SD' : String(board.solvedRow);
@@ -47,16 +47,27 @@ export function buildShareText(state: DuelState, options: { colorblind?: boolean
         ? 'lost'
         : 'draw';
 
-  const lines = [
-    `${title} 🤠${flags.length ? ` (${flags.join(', ')})` : ''}`,
-    `Me ${rowsUsed(boards.you)}/6 vs ${rival} ${rowsUsed(boards.ai)}/6, ${result}`,
-  ];
+  const header = `${title} 🤠${flags.length ? ` (${flags.join(', ')})` : ''}`;
+  const length = wordLengthOf(state);
+
+  if (isShared(state)) {
+    // One board, taking turns: 🔵 marks your shots, 🔴 the rival's.
+    const winner = outcome?.winner === 'you' ? 'Me' : outcome?.winner === 'ai' ? rival : null;
+    const lines = [header, winner ? `${winner} landed it on shot ${state.round}, ${result}` : `vs ${rival}, ${result}`];
+    for (const { by, row } of sharedRows(state)) {
+      const tiles = row.marks ? row.marks.map((m) => palette[m]).join('') : blankRow(length);
+      lines.push(`${by === 'you' ? '🔵' : '🔴'} ${tiles}`);
+    }
+    return lines.join('\n');
+  }
+
+  const lines = [header, `Me ${rowsUsed(boards.you)}/6 vs ${rival} ${rowsUsed(boards.ai)}/6, ${result}`];
   const rowCount = Math.max(boards.you.rows.length, boards.ai.rows.length);
   for (let i = 0; i < rowCount; i++) {
     const cell = (board: Board) => {
       const row = board.rows[i];
-      if (!row) return '      ';
-      return row.marks ? row.marks.map((m) => palette[m]).join('') : BLANK_ROW;
+      if (!row) return ' '.repeat(length + 1);
+      return row.marks ? row.marks.map((m) => palette[m]).join('') : blankRow(length);
     };
     const marker = state.suddenDeath && i === 6 ? ' ☠️' : '';
     lines.push(`${cell(boards.you)}  ${cell(boards.ai)}${marker}`);

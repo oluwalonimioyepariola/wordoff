@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
-import { DuelRow, isSolved, SuddenDeathHint, WORD_LENGTH } from '../engine';
+import { DuelRow, isSolved, SuddenDeathHint } from '../engine';
 import { motion, useTheme } from '../theme';
 import { Tile } from './Tile';
 
@@ -17,9 +17,10 @@ interface Props {
   hints: SuddenDeathHint[];
   celebrate: boolean;
   tileSize: number;
+  length: number;
 }
 
-export function Board({ rows, totalRows, current, currentLocked, revealingRow, shakeKey, hints, celebrate, tileSize }: Props) {
+export function Board({ rows, totalRows, current, currentLocked, revealingRow, shakeKey, hints, celebrate, tileSize, length }: Props) {
   const { c } = useTheme();
   const currentIndex = rows.length;
 
@@ -31,7 +32,7 @@ export function Board({ rows, totalRows, current, currentLocked, revealingRow, s
         const solved = row && isSolved(row.marks);
         return (
           <ShakeRow key={r} shakeKey={isCurrent ? shakeKey : null} lifted={isCurrent && currentLocked}>
-            {Array.from({ length: WORD_LENGTH }, (_, i) => {
+            {Array.from({ length }, (_, i) => {
               if (row) {
                 if (row.guess === null) {
                   return <View key={i} style={[styles.blank, { width: tileSize, height: tileSize, borderColor: c.inkSoft }]} />;

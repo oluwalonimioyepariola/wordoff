@@ -1,7 +1,7 @@
 import { DuelOutcome } from './duel';
 import { createRng } from './rng';
 import { OpponentId, PlayerId } from './types';
-import { ANSWERS } from './words';
+import { answersFor, WordLength } from './words';
 
 /** A best-of-N series of Quick Duels. Draws are replayed, up to a cap. */
 
@@ -58,9 +58,10 @@ export function isSweep(match: MatchState): boolean {
 }
 
 /** Random answer for a Quick Duel, avoiding words played recently. */
-export function pickQuickAnswer(seed: string, recent: readonly string[]): string {
+export function pickQuickAnswer(seed: string, recent: readonly string[], length: WordLength = 5): string {
   const rng = createRng(seed);
   const avoid = new Set(recent);
-  const fresh = ANSWERS.filter((w) => !avoid.has(w));
-  return rng.pick(fresh.length ? fresh : ANSWERS);
+  const pool = answersFor(length);
+  const fresh = pool.filter((w) => !avoid.has(w));
+  return rng.pick(fresh.length ? fresh : pool);
 }

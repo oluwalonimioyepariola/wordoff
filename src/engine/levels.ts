@@ -1,13 +1,15 @@
 import type { BrainTuning } from './ai/brain';
 import { getOpponent } from './ai/opponents';
 import { createRng } from './rng';
+import type { BoardStyle } from './duel';
 import { OpponentId } from './types';
-import { ANSWERS } from './words';
+import { answersFor, WordLength } from './words';
 
 /**
- * Level mode: a 30-level trail across three chapters. Early levels use easy
- * words, give you scouts, and handicap the rival with wild warm-up shots.
- * Later levels take those away, and the last ones add the shot clock and hard mode.
+ * Level mode: a 30-level trail across three chapters, all on the shared board
+ * (take turns, see every guess). Chapter 1 uses short, easy 4-letter words with
+ * scouts and a rival who warms up with wild shots; later chapters move to
+ * 5-letter words and take the help away, adding the shot clock and hard mode.
  */
 
 export type WordTier = 'easy' | 'medium' | 'hard';
@@ -19,50 +21,57 @@ export interface LevelDef {
   title: string;
   opponent: OpponentId;
   tier: WordTier;
+  wordLength: WordLength;
+  board: BoardStyle;
+  /** Shared rows before sudden death. */
+  maxRows: number;
   tuning: BrainTuning;
   scouts: number;
   shotClockMs: number | null;
   hardMode: boolean;
   boss: boolean;
-  /** Solve on or before row stars[0] for ★★★, stars[1] for ★★. Any win is ★. */
+  /** Land it on or before your shot stars[0] for ★★★, stars[1] for ★★. Any win is ★. */
   stars: [number, number];
 }
 
 const RARE = new Set('jqxzvkwyfb');
 
-let tiers: Record<WordTier, string[]> | null = null;
+const tierCache: Partial<Record<WordLength, Record<WordTier, string[]>>> = {};
 
 /**
  * Ranks answers by how findable they are: common letters, no repeats, no rare
  * letters rank easiest. Split into thirds.
  */
-export function wordTiers(): Record<WordTier, string[]> {
-  if (tiers) return tiers;
+export function wordTiers(length: WordLength = 5): Record<WordTier, string[]> {
+  const cached = tierCache[length];
+  if (cached) return cached;
+  const ANSWERS = answersFor(length);
   const freq: Record<string, number> = {};
   for (const w of ANSWERS) for (const c of new Set(w)) freq[c] = (freq[c] ?? 0) + 1;
   const score = (w: string) => {
     const unique = new Set(w);
     let s = 0;
     for (const c of unique) s += freq[c];
-    s -= (5 - unique.size) * 250; // repeated letters are hard to spot
+    s -= (w.length - unique.size) * 250; // repeated letters are hard to spot
     for (const c of w) if (RARE.has(c)) s -= 120;
     return s;
   };
   const ranked = [...ANSWERS].sort((a, b) => score(b) - score(a) || a.localeCompare(b));
   const third = Math.ceil(ranked.length / 3);
-  tiers = { easy: ranked.slice(0, third), medium: ranked.slice(third, third * 2), hard: ranked.slice(third * 2) };
+  const tiers = { easy: ranked.slice(0, third), medium: ranked.slice(third, third * 2), hard: ranked.slice(third * 2) };
+  tierCache[length] = tiers;
   return tiers;
 }
 
 export function tierOf(word: string): WordTier {
-  const t = wordTiers();
+  const t = wordTiers(word.length as WordLength);
   return t.easy.includes(word) ? 'easy' : t.medium.includes(word) ? 'medium' : 'hard';
 }
 
-const CHAPTERS: { name: string; opponent: OpponentId; tier: WordTier }[] = [
-  { name: 'Dusty Trail', opponent: 'rookie', tier: 'easy' },
-  { name: 'Gunsmoke Gulch', opponent: 'gunslinger', tier: 'medium' },
-  { name: 'High Noon', opponent: 'sheriff', tier: 'hard' },
+const CHAPTERS: { name: string; opponent: OpponentId; tier: WordTier; wordLength: WordLength }[] = [
+  { name: 'Dusty Trail', opponent: 'rookie', tier: 'easy', wordLength: 4 },
+  { name: 'Gunsmoke Gulch', opponent: 'gunslinger', tier: 'medium', wordLength: 5 },
+  { name: 'High Noon', opponent: 'sheriff', tier: 'hard', wordLength: 5 },
 ];
 
 const TITLES = [
@@ -104,12 +113,15 @@ function buildLevels(): LevelDef[] {
         title: TITLES[c][step],
         opponent: ch.opponent,
         tier: ch.tier,
+        wordLength: ch.wordLength,
+        board: 'shared',
+        maxRows: 6,
         tuning,
         scouts,
         shotClockMs,
         hardMode,
         boss,
-        stars: c === 0 ? [4, 5] : c === 1 ? [3, 5] : [3, 4],
+        stars: [2, 3],
       });
     }
   });
@@ -128,7 +140,7 @@ export function getLevel(id: number): LevelDef {
 /** A fresh word for each attempt, so retrying a level isn't a memory test. */
 export function levelAnswer(id: number, attempt: number): string {
   const level = getLevel(id);
-  return createRng(`level-${id}-attempt-${attempt}`).pick(wordTiers()[level.tier]);
+  return createRng(`level-${id}-attempt-${attempt}`).pick(wordTiers(level.wordLength)[level.tier]);
 }
 
 export function levelSeed(id: number, attempt: number): string {
@@ -151,5 +163,5 @@ export function levelBlurb(level: LevelDef): string {
     level.hardMode && 'hard mode',
     (level.tuning.warmupRows ?? 0) > 0 && `${rival.split(' ')[0]} warms up for ${level.tuning.warmupRows} row${level.tuning.warmupRows! > 1 ? 's' : ''}`,
   ].filter(Boolean);
-  return `${level.tier} words vs ${rival}${extras.length ? ' · ' + extras.join(' · ') : ''}`;
+  return `${level.wordLength}-letter ${level.tier} words vs ${rival}${extras.length ? ' · ' + extras.join(' · ') : ''}`;
 }

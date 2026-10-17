@@ -10,10 +10,11 @@ interface Props {
   showLetters?: boolean;
   /** While the rival aims, how many letters of its next row are "typed" (0–5). */
   typing?: number | null;
+  length?: number;
 }
 
 /** The rival's board: colors only during play, never letters. */
-export function RivalBoard({ rows, totalRows, cell = 14, showLetters = false, typing = null }: Props) {
+export function RivalBoard({ rows, totalRows, cell = 14, showLetters = false, typing = null, length = WORD_LENGTH }: Props) {
   const { c, markColor } = useTheme();
   return (
     <View style={styles.grid} accessibilityLabel={`Rival has used ${rows.length} of ${totalRows} rows`}>
@@ -22,7 +23,7 @@ export function RivalBoard({ rows, totalRows, cell = 14, showLetters = false, ty
         const aimingRow = typing !== null && r === rows.length;
         return (
           <View key={r} style={styles.row}>
-            {Array.from({ length: WORD_LENGTH }, (_, i) => {
+            {Array.from({ length }, (_, i) => {
               const mark = row?.marks?.[i];
               const blank = row && row.guess === null;
               const typed = aimingRow && i < (typing ?? 0);

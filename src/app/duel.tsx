@@ -6,6 +6,7 @@ import { Board } from '../components/Board';
 import { Keyboard } from '../components/Keyboard';
 import { CountdownOverlay, TauntBubble, Toast } from '../components/Overlays';
 import { RivalBoard } from '../components/RivalBoard';
+import { SharedBoard } from '../components/SharedBoard';
 import { Avatar, Button, H, P } from '../components/ui';
 import {
   buildShareText,
@@ -24,7 +25,9 @@ import {
   outcomeHeadline,
   pickQuickAnswer,
   randomSeed,
+  sharedRows,
   starsFor,
+  wordLengthOf,
   winsNeeded,
 } from '../engine';
 import { useStandoff } from '../game/useStandoff';
@@ -58,12 +61,21 @@ export default function DuelScreen() {
         shotClockMs,
         seed: dailySeed(day),
         dayNumber: day,
+        board: 'shared',
+        wordLength: 5,
+        maxRows: 6,
       });
     }
     if (mode === 'level') {
       if (!levelId || levelId > stats.levels.unlocked) return null;
-      if (activeLevel?.config.levelId === levelId && !activeLevel.outcome) return activeLevel;
       const level = getLevel(levelId);
+      // Resume an unfinished attempt, unless it was saved under older level rules.
+      const resumable =
+        activeLevel?.config.levelId === levelId &&
+        !activeLevel.outcome &&
+        activeLevel.config.board === level.board &&
+        activeLevel.config.wordLength === level.wordLength;
+      if (resumable) return activeLevel;
       const attempt = stats.levels.attempts[levelId] ?? 0;
       return createDuel({
         answer: levelAnswer(levelId, attempt),
@@ -75,19 +87,27 @@ export default function DuelScreen() {
         levelId,
         scouts: level.scouts,
         tuning: level.tuning,
+        board: level.board,
+        wordLength: level.wordLength,
+        maxRows: level.maxRows,
       });
     }
     if (!match) return null;
     if (activeQuick && !activeQuick.outcome) return activeQuick;
     const seed = randomSeed();
     return createDuel({
-      answer: pickQuickAnswer(seed, stats.recentAnswers),
+      answer: pickQuickAnswer(seed, stats.recentAnswers, settings.quickLength),
       opponent: match.opponent,
       mode: 'quick',
       hardMode: settings.hardMode,
       shotClockMs,
       seed,
       scouts: QUICK_SCOUTS,
+      board: settings.boardStyle,
+      wordLength: settings.quickLength,
+      maxRows: 6,
+      // Take turns going first across a match.
+      firstShooter: match.results.length % 2 === 0 ? 'you' : 'ai',
     });
     // Only pick a duel on entry and when moving to the next duel / level.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -140,7 +160,10 @@ function StandoffView({ initial, onNext, onLevel }: ViewProps) {
   const { state } = g;
   const rivalName = g.profile.shortName;
   const over = g.phase === 'result' && !!state.outcome;
-  const tile = Math.floor(Math.min(58, (width - 2 * space.base - 4 * 6) / 5, (height - 500) / state.maxRows));
+  const marker = 26;
+  const tile = g.shared
+    ? Math.floor(Math.min(60, (width - 2 * space.base - 2 * marker - (g.length + 1) * 6) / g.length, (height - 440) / state.maxRows))
+    : Math.floor(Math.min(58, (width - 2 * space.base - (g.length - 1) * 6) / g.length, (height - 500) / state.maxRows));
 
   const walkAway = () => {
     if (state.outcome) return router.back();
@@ -163,7 +186,10 @@ function StandoffView({ initial, onNext, onLevel }: ViewProps) {
 
   // Who is waiting on whom, in plain words.
   let status: { text: string; color: string } | null = null;
-  if (g.phase === 'aiming' && !state.outcome) {
+  if (g.shared) {
+    if (g.phase === 'aiming' && g.yourTurn) status = { text: 'Your shot! Type a word and fire.', color: c.you };
+    else if (g.phase === 'aiming' && g.rivalsTurn) status = { text: `${rivalName} is aiming…`, color: c.rival };
+  } else if (g.phase === 'aiming' && !state.outcome) {
     if (g.youLocked && !g.rivalLocked) status = { text: `Locked in. Waiting for ${rivalName}…`, color: c.inkSoft };
     else if (g.rivalLocked && !g.youLocked) status = { text: `${rivalName} has locked in. Your move!`, color: c.rival };
     else if (!g.rivalLocked) status = { text: `${rivalName} is picking a word…`, color: c.inkSoft };
@@ -195,12 +221,28 @@ function StandoffView({ initial, onNext, onLevel }: ViewProps) {
       </View>
 
       {!over && (
-        <View style={[styles.rivalCard, { backgroundColor: c.surface, borderColor: g.rivalLocked ? c.rival : c.hairline }]}>
+        <View
+          style={[
+            styles.rivalCard,
+            g.shared && styles.rivalCardShared,
+            { backgroundColor: c.surface, borderColor: g.rivalLocked || g.rivalsTurn ? c.rival : c.hairline },
+          ]}
+        >
           <Avatar profile={g.profile} size={40} />
           <View style={{ flex: 1, gap: 4 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <Text style={{ color: c.ink, fontWeight: '700' }}>{g.profile.name}</Text>
-              {g.rivalLocked && !state.outcome ? (
+              {g.shared ? (
+                g.rivalsTurn ? (
+                  <View style={[styles.badge, { backgroundColor: c.rival }]}>
+                    <Text style={styles.badgeText}>AIMING</Text>
+                  </View>
+                ) : g.yourTurn ? (
+                  <View style={[styles.badge, { backgroundColor: c.you }]}>
+                    <Text style={styles.badgeText}>YOUR SHOT</Text>
+                  </View>
+                ) : null
+              ) : g.rivalLocked && !state.outcome ? (
                 <View style={[styles.badge, { backgroundColor: c.rival }]}>
                   <Text style={styles.badgeText}>LOCKED</Text>
                 </View>
@@ -210,11 +252,14 @@ function StandoffView({ initial, onNext, onLevel }: ViewProps) {
             </View>
             <TauntBubble text={g.taunt?.text ?? null} id={g.taunt?.id ?? null} />
           </View>
-          <RivalBoard
-            rows={g.rivalRows}
-            totalRows={state.maxRows}
-            typing={g.phase === 'aiming' && !g.rivalLocked ? g.rivalTyped : g.rivalLocked && g.phase !== 'reveal' ? 5 : null}
-          />
+          {!g.shared && (
+            <RivalBoard
+              rows={g.rivalRows}
+              totalRows={state.maxRows}
+              length={g.length}
+              typing={g.phase === 'aiming' && !g.rivalLocked ? g.rivalTyped : g.rivalLocked && g.phase !== 'reveal' ? g.length : null}
+            />
+          )}
         </View>
       )}
 
@@ -282,17 +327,33 @@ function StandoffView({ initial, onNext, onLevel }: ViewProps) {
         <>
           <View style={styles.boardArea}>
             <Toast message={g.error?.message ?? null} id={g.error?.id ?? null} />
-            <Board
-              rows={g.yourRows}
-              totalRows={state.maxRows}
-              current={g.pendingGuess ?? (state.outcome ? null : g.input)}
-              currentLocked={g.youLocked}
-              revealingRow={g.revealingRow}
-              shakeKey={g.error?.id ?? null}
-              hints={g.revealed}
-              celebrate={false}
-              tileSize={tile}
-            />
+            {g.shared ? (
+              <SharedBoard
+                shots={g.shots}
+                totalRows={state.maxRows}
+                length={g.length}
+                turn={state.turn}
+                input={g.yourTurn ? g.input : null}
+                rivalTyping={g.rivalTyping}
+                revealingRow={g.revealingRow}
+                hints={g.revealed}
+                rivalInitial={g.profile.name.replace('The ', '')[0]}
+                tileSize={tile}
+              />
+            ) : (
+              <Board
+                rows={g.yourRows}
+                totalRows={state.maxRows}
+                current={g.pendingGuess ?? (state.outcome ? null : g.input)}
+                currentLocked={g.youLocked}
+                revealingRow={g.revealingRow}
+                shakeKey={g.error?.id ?? null}
+                hints={g.revealed}
+                celebrate={false}
+                tileSize={tile}
+                length={g.length}
+              />
+            )}
             <CountdownOverlay beat={g.beat} />
           </View>
           <View style={styles.actionRow}>
@@ -346,18 +407,36 @@ function ResultPanel({ state, rivalName, unlocked, stars, matchLine }: ResultPro
           ` · you ${secs(state.boards.you.totalMs)} vs ${secs(state.boards.ai.totalMs)}`}
       </P>
 
+      {state.config.board === 'shared' ? (
+        <View style={{ alignItems: 'center', marginVertical: space.sm }}>
+          <SharedBoard
+            shots={sharedRows(state)}
+            totalRows={state.order?.length ?? 0}
+            length={wordLengthOf(state)}
+            turn={state.turn}
+            input={null}
+            rivalTyping={null}
+            revealingRow={null}
+            hints={[]}
+            rivalInitial={rivalName.replace('The ', '')[0]}
+            tileSize={30}
+            celebrate={outcome.winner === 'you'}
+          />
+        </View>
+      ) : (
       <View style={styles.boards}>
         <View style={styles.boardCol}>
           <Text style={[styles.boardLabel, { color: c.you }]}>You · {rowsText(state.boards.you.solvedRow)}</Text>
-          <RivalBoard rows={state.boards.you.rows} totalRows={state.boards.you.rows.length} cell={youTile} showLetters />
+          <RivalBoard rows={state.boards.you.rows} totalRows={state.boards.you.rows.length} cell={youTile} showLetters length={wordLengthOf(state)} />
         </View>
         <View style={styles.boardCol}>
           <Text style={[styles.boardLabel, { color: c.rival }]}>
             {rivalName} · {rowsText(state.boards.ai.solvedRow)}
           </Text>
-          <RivalBoard rows={state.boards.ai.rows} totalRows={state.boards.ai.rows.length} cell={youTile} showLetters />
+          <RivalBoard rows={state.boards.ai.rows} totalRows={state.boards.ai.rows.length} cell={youTile} showLetters length={wordLengthOf(state)} />
         </View>
       </View>
+      )}
       {(state.scouted?.length ?? 0) > 0 && <P soft>You scouted {state.scouted.length} letter{state.scouted.length > 1 ? 's' : ''}.</P>}
 
       {unlocked.map((id) => (
@@ -399,6 +478,7 @@ const styles = StyleSheet.create({
     gap: space.md,
     minHeight: 110,
   },
+  rivalCardShared: { minHeight: 0, paddingVertical: space.sm },
   badge: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
   badgeText: { color: '#fff', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
   suddenDeath: { textAlign: 'center', fontWeight: '800', marginTop: space.sm, letterSpacing: 1 },

@@ -1,5 +1,5 @@
 import { marksToCode, patternCode } from '../evaluate';
-import { ScoredGuess, SuddenDeathHint, WORD_LENGTH } from '../types';
+import { ScoredGuess, SuddenDeathHint } from '../types';
 
 /** True when `word` could still be the answer given everything this player has seen. */
 export function isConsistent(
@@ -24,7 +24,7 @@ export function filterCandidates(
 
 /** Words that keep every green in place but may ignore yellows and grays. */
 export function filterGreensOnly(words: readonly string[], history: readonly ScoredGuess[]): string[] {
-  const fixed: (string | null)[] = new Array(WORD_LENGTH).fill(null);
+  const fixed: (string | null)[] = new Array(words[0]?.length ?? 5).fill(null);
   for (const { guess, marks } of history) {
     marks.forEach((m, i) => {
       if (m === 'correct') fixed[i] = guess[i];

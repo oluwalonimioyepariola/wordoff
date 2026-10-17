@@ -1,11 +1,14 @@
 import { createRng, Rng, shuffled } from '../rng';
 import { OpponentId, ScoredGuess, SuddenDeathHint } from '../types';
-import { ANSWERS } from '../words';
+import { answersFor, WordLength } from '../words';
 import { getOpponent, OpponentProfile } from './opponents';
 import { bestInformationGuess, filterCandidates, filterGreensOnly } from './solver';
 
 /** Strong openers that are also answers, so an opener can win on row one. */
-const OPENERS = ['slate', 'crane', 'trace', 'stare', 'arise', 'raise', 'least', 'crate'];
+const OPENERS: Record<WordLength, string[]> = {
+  4: ['rate', 'late', 'care', 'lane', 'tone', 'rise', 'tale', 'tear'],
+  5: ['slate', 'crane', 'trace', 'stare', 'arise', 'raise', 'least', 'crate'],
+};
 
 /** Extra non-candidate words the Sheriff considers for splitting the field. */
 const PROBE_SAMPLE = 250;
@@ -32,12 +35,18 @@ export interface AiBrain {
    * The AI's next guess. It only ever sees its own board (plus the shared
    * sudden-death hint), never the answer or the player's letters.
    */
-  nextGuess(history: readonly ScoredGuess[], hint: SuddenDeathHint | null): string;
+  nextGuess(history: readonly ScoredGuess[], hint: SuddenDeathHint | null, ownShots?: number): string;
   /** Simulated aiming time for the guess on this (0-based) round, in ms. */
   thinkTimeMs(round: number): number;
 }
 
-export function createBrain(opponent: OpponentId, seed: string, tuning: BrainTuning = {}): AiBrain {
+export function createBrain(
+  opponent: OpponentId,
+  seed: string,
+  tuning: BrainTuning = {},
+  length: WordLength = 5,
+): AiBrain {
+  const ANSWERS = answersFor(length);
   const base = getOpponent(opponent);
   const profile: OpponentProfile = {
     ...base,
@@ -49,15 +58,17 @@ export function createBrain(opponent: OpponentId, seed: string, tuning: BrainTun
   // a duel resumed after the app was closed plays out exactly the same.
   const roundRng = (round: number, purpose: string) => createRng(`${seed}:${opponent}:${round}:${purpose}`);
 
-  const nextGuess: AiBrain['nextGuess'] = (history, hint) => {
+  // `history` is everything the AI can see (on a shared board that includes your
+  // rows); `ownShots` counts only its own, which is what warm-up and pressure use.
+  const nextGuess: AiBrain['nextGuess'] = (history, hint, ownShots = history.length) => {
     const rng = roundRng(history.length, hint ? 'guess-sd' : 'guess');
     const tried = new Set(history.map((h) => h.guess));
     const fresh = (words: string[]) => words.filter((w) => !tried.has(w));
 
     if (history.length === 0 && !hint) {
-      return profile.strategy === 'loose' || warmupRows > 0 ? rng.pick(ANSWERS) : rng.pick(OPENERS);
+      return profile.strategy === 'loose' || warmupRows > 0 ? rng.pick(ANSWERS) : rng.pick(OPENERS[length]);
     }
-    if (history.length < warmupRows && !hint) {
+    if (ownShots < warmupRows && !hint) {
       return rng.pick(fresh(ANSWERS.slice()));
     }
 
@@ -68,12 +79,12 @@ export function createBrain(opponent: OpponentId, seed: string, tuning: BrainTun
 
     switch (profile.strategy) {
       case 'information':
-        return informationGuess(candidates, rng);
+        return informationGuess(candidates, ANSWERS, rng);
       case 'consistent':
       case 'loose': {
         // Pressure sharpens everyone: discipline rises each row, and sudden
         // death (one shot left) leaves no room for sloppiness.
-        const discipline = profile.clueDiscipline + PRESSURE_PER_ROW * history.length;
+        const discipline = profile.clueDiscipline + PRESSURE_PER_ROW * ownShots;
         if (hint || rng.chance(discipline)) return rng.pick(candidates);
         const sloppy = fresh(filterGreensOnly(ANSWERS, history));
         return sloppy.length ? rng.pick(sloppy) : rng.pick(candidates);
@@ -88,7 +99,7 @@ export function createBrain(opponent: OpponentId, seed: string, tuning: BrainTun
   };
 }
 
-function informationGuess(candidates: string[], rng: Rng): string {
+function informationGuess(candidates: string[], ANSWERS: readonly string[], rng: Rng): string {
   if (candidates.length <= 2) return candidates[0];
   const probes = shuffled(ANSWERS, rng).slice(0, PROBE_SAMPLE);
   const pool = Array.from(new Set([...candidates, ...probes]));

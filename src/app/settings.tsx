@@ -1,4 +1,5 @@
 import { Card, H, P, Screen, Segmented, ToggleRow } from '../components/ui';
+import type { BoardStyle } from '../engine';
 import { ShotClock, ThemePref, useSettings } from '../store/settings';
 
 export default function SettingsScreen() {
@@ -7,6 +8,20 @@ export default function SettingsScreen() {
     <Screen title="Settings">
       <Card>
         <H>Rules</H>
+        <P soft>Quick Duel board</P>
+        <Segmented<BoardStyle>
+          options={[
+            { label: 'Shared (take turns)', value: 'shared' },
+            { label: 'Split (standoff)', value: 'split' },
+          ]}
+          value={s.boardStyle}
+          onChange={(v) => s.set('boardStyle', v)}
+        />
+        <P soft>
+          {s.boardStyle === 'shared'
+            ? 'One board: you and your rival take turns and see every guess.'
+            : 'Two boards: both lock in at once, then 3-2-1 DRAW. You only see your rival’s colors.'}
+        </P>
         <ToggleRow
           label="Hard mode"
           detail="Every revealed hint must be used in later guesses."

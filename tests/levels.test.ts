@@ -81,7 +81,7 @@ describe('levels', () => {
     assert.ok(t.easy.length > 300 && t.hard.length > 300);
     assert.ok(t.easy.includes('arise') || t.easy.includes('stare'));
     assert.ok(t.hard.includes('fuzzy') || t.hard.includes('kayak') || t.hard.includes('dizzy'));
-    assert.ok(t.easy.includes(levelAnswer(1, 0)));
+    assert.ok(wordTiers(4).easy.includes(levelAnswer(1, 0)));
     assert.notEqual(levelAnswer(1, 0), levelAnswer(1, 1));
   });
 
@@ -108,10 +108,10 @@ describe('levels', () => {
   });
 
   it('awards stars by solve row', () => {
-    const l = getLevel(1); // stars [4, 5]
-    assert.equal(starsFor(l, true, 3), 3);
-    assert.equal(starsFor(l, true, 5), 2);
-    assert.equal(starsFor(l, true, 7), 1);
+    const l = getLevel(1); // stars [2, 3]: counted in your own shots
+    assert.equal(starsFor(l, true, 2), 3);
+    assert.equal(starsFor(l, true, 3), 2);
+    assert.equal(starsFor(l, true, 5), 1);
     assert.equal(starsFor(l, false, 3), 0);
   });
 });

@@ -27,25 +27,24 @@ export default function HowToPlay() {
   return (
     <Screen>
       <H size="title">This town has one word</H>
-      <P>You and your rival hunt the same secret five-letter word, each on your own board.</P>
+      <P>You and your rival hunt the same secret word on one board, taking turns.</P>
 
       <Card>
-        <H>1 · Lock in</H>
-        <P>Type a guess and hit FIRE. Your rival aims at the same time. Neither of you sees the other’s guess.</P>
+        <H>1 · Take your shot</H>
+        <P>On your turn, type a word and hit FIRE. Your row is marked “You”, your rival’s rows carry their initial.</P>
       </Card>
 
       <Card>
-        <H>2 · Draw!</H>
-        <P>When both are locked: 3, 2, 1, DRAW! Both rows flip at once.</P>
+        <H>2 · Read the colors</H>
         <Example word="crate" answer="trace" />
         <P soft>Green: right spot. Yellow: in the word, wrong spot. Gray: not in the word.</P>
-        <P soft>You see your rival’s colors, never their letters, and they see only yours.</P>
+        <P>Every guess on the board helps you, even your rival’s. Use their colors too.</P>
       </Card>
 
       <Card>
-        <H>3 · Win the standoff</H>
-        <P>First to solve wins. Solve on the same row and the faster total aim wins (a photo finish).</P>
-        <P>Nobody solves in six? Sudden death: one letter is revealed to both, and each of you gets one last shot.</P>
+        <H>3 · Land it first</H>
+        <P>Whoever lands the word first wins. If the board fills up, sudden death reveals one letter and you each get one last shot.</P>
+        <P soft>Prefer the classic? Settings → Split board: separate boards, both fire at once, 3-2-1 DRAW.</P>
       </Card>
 
       <Card>

@@ -1,4 +1,4 @@
-import { Mark, ScoredGuess, WORD_LENGTH } from './types';
+import { Mark, ScoredGuess } from './types';
 
 /**
  * Scores a guess against the answer the way Wordle does, including repeated
@@ -6,17 +6,18 @@ import { Mark, ScoredGuess, WORD_LENGTH } from './types';
  * of that letter remain in the answer.
  */
 export function scoreGuess(guess: string, answer: string): Mark[] {
-  const marks: Mark[] = new Array(WORD_LENGTH).fill('absent');
+  const n = answer.length;
+  const marks: Mark[] = new Array(n).fill('absent');
   const remaining: Record<string, number> = {};
 
-  for (let i = 0; i < WORD_LENGTH; i++) {
+  for (let i = 0; i < n; i++) {
     if (guess[i] === answer[i]) {
       marks[i] = 'correct';
     } else {
       remaining[answer[i]] = (remaining[answer[i]] ?? 0) + 1;
     }
   }
-  for (let i = 0; i < WORD_LENGTH; i++) {
+  for (let i = 0; i < n; i++) {
     if (marks[i] === 'correct') continue;
     const letter = guess[i];
     if (remaining[letter]) {
@@ -28,26 +29,27 @@ export function scoreGuess(guess: string, answer: string): Mark[] {
 }
 
 /**
- * Same result as scoreGuess, packed into one base-3 number (0..242).
+ * Same result as scoreGuess, packed into one base-3 number (0..3^length-1).
  * The solver calls this hundreds of thousands of times, so it avoids arrays.
  */
 export function patternCode(guess: string, answer: string): number {
+  const n = answer.length;
   let code = 0;
   let used = 0; // bitmask of answer positions already claimed
   let greens = 0;
-  for (let i = 0; i < WORD_LENGTH; i++) {
+  for (let i = 0; i < n; i++) {
     if (guess.charCodeAt(i) === answer.charCodeAt(i)) {
       greens |= 1 << i;
       used |= 1 << i;
     }
   }
-  for (let i = 0; i < WORD_LENGTH; i++) {
+  for (let i = 0; i < n; i++) {
     let digit = 0;
     if (greens & (1 << i)) {
       digit = 2;
     } else {
       const c = guess.charCodeAt(i);
-      for (let j = 0; j < WORD_LENGTH; j++) {
+      for (let j = 0; j < n; j++) {
         if (!(used & (1 << j)) && answer.charCodeAt(j) === c) {
           used |= 1 << j;
           digit = 1;
@@ -65,7 +67,7 @@ export function marksToCode(marks: readonly Mark[]): number {
 }
 
 export function isSolved(marks: readonly Mark[] | null | undefined): boolean {
-  return !!marks && marks.length === WORD_LENGTH && marks.every((m) => m === 'correct');
+  return !!marks && marks.length > 0 && marks.every((m) => m === 'correct');
 }
 
 const RANK: Record<Mark, number> = { absent: 0, present: 1, correct: 2 };

@@ -10,9 +10,8 @@ import {
   PlayerId,
   ScoredGuess,
   SuddenDeathHint,
-  WORD_LENGTH,
 } from './types';
-import { isAcceptedWord, normalizeWord } from './words';
+import { acceptedWords, normalizeWord, WordLength } from './words';
 
 /**
  * The standoff.
@@ -27,7 +26,14 @@ import { isAcceptedWord, normalizeWord } from './words';
  *   and each gets one final shot.
  * - An empty shot clock fires a blank: the row is spent with no guess.
  * - Scouting reveals one of the answer's letters to you, at a time penalty.
+ *
+ * Shared board (the default for new games) is the friendlier variant: one
+ * board, turns alternate, and every guess (letters and colors) is visible to
+ * both players. First to land the word wins. If the board fills up, sudden
+ * death reveals a letter and each player gets one more shot.
  */
+
+export type BoardStyle = 'split' | 'shared';
 
 /** Time added to your total for each scout (only matters in a photo finish). */
 export const SCOUT_PENALTY_MS = 10_000;
@@ -47,6 +53,13 @@ export interface DuelConfig {
   scouts?: number;
   /** Level-mode adjustments to the rival. */
   tuning?: BrainTuning;
+  /** 'split' (simultaneous standoff, default for older saves) or 'shared' (take turns). */
+  board?: BoardStyle;
+  wordLength?: WordLength;
+  /** Rows before sudden death: per player on split boards, in total on shared ones. */
+  maxRows?: number;
+  /** Shared board: who shoots first (default you). */
+  firstShooter?: PlayerId;
 }
 
 export interface DuelRow {
@@ -78,6 +91,11 @@ export interface DuelOutcome {
   forfeitedBy?: PlayerId;
 }
 
+export interface Shot {
+  by: PlayerId;
+  row: DuelRow;
+}
+
 export interface RoundReveal {
   round: number;
   you: DuelRow;
@@ -98,6 +116,12 @@ export interface DuelState {
   outcome: DuelOutcome | null;
   /** Answer positions you've scouted, in the order you scouted them. */
   scouted: number[];
+  /** Shared board: whose shot it is. */
+  turn: PlayerId;
+  /** Shared board: who fired each row, in order. */
+  order: PlayerId[];
+  /** Shared board: the most recent shot. */
+  lastShot: Shot | null;
 }
 
 export type GuessCheck =
@@ -107,10 +131,11 @@ export type GuessCheck =
 const emptyBoard = (): Board => ({ rows: [], totalMs: 0, solvedRow: null });
 
 export function createDuel(config: DuelConfig): DuelState {
+  const answer = normalizeWord(config.answer);
   return {
-    config: { ...config, answer: normalizeWord(config.answer) },
+    config: { ...config, answer, wordLength: (config.wordLength ?? answer.length) as WordLength },
     round: 0,
-    maxRows: MAX_ROWS,
+    maxRows: config.maxRows ?? MAX_ROWS,
     suddenDeath: false,
     hint: null,
     boards: { you: emptyBoard(), ai: emptyBoard() },
@@ -118,7 +143,30 @@ export function createDuel(config: DuelConfig): DuelState {
     lastReveal: null,
     outcome: null,
     scouted: [],
+    turn: config.firstShooter ?? 'you',
+    order: [],
+    lastShot: null,
   };
+}
+
+export function wordLengthOf(state: DuelState): WordLength {
+  return (state.config.wordLength ?? state.config.answer.length) as WordLength;
+}
+
+export function isShared(state: DuelState): boolean {
+  return state.config.board === 'shared';
+}
+
+/** Shared board rows in the order they were fired. */
+export function sharedRows(state: DuelState): Shot[] {
+  const next: Record<PlayerId, number> = { you: 0, ai: 0 };
+  return (state.order ?? []).map((by) => ({ by, row: state.boards[by].rows[next[by]++] }));
+}
+
+/** Everything a player can see: their own board, or the whole shared board. */
+export function visibleHistory(state: DuelState, player: PlayerId): ScoredGuess[] {
+  if (!isShared(state)) return scoredHistory(state.boards[player]);
+  return sharedRows(state).flatMap(({ row }) => (row.guess && row.marks ? [{ guess: row.guess, marks: row.marks }] : []));
 }
 
 /** Rows that carry a real guess, in the shape the solver and hard mode use. */
@@ -128,13 +176,14 @@ export function scoredHistory(board: Board): ScoredGuess[] {
 
 export function validateGuess(state: DuelState, player: PlayerId, input: string): GuessCheck {
   const guess = normalizeWord(input);
-  if (guess.length !== WORD_LENGTH || !/^[a-z]+$/.test(guess)) {
+  const length = wordLengthOf(state);
+  if (guess.length !== length || !/^[a-z]+$/.test(guess)) {
     return { ok: false, reason: 'length', message: 'Not enough letters' };
   }
-  if (!isAcceptedWord(guess)) {
+  if (!acceptedWords(length).has(guess)) {
     return { ok: false, reason: 'not-a-word', message: 'Not in word list' };
   }
-  const history = scoredHistory(state.boards[player]);
+  const history = visibleHistory(state, player);
   if (history.some((h) => h.guess === guess)) {
     return { ok: false, reason: 'repeat', message: 'Already fired that one' };
   }
@@ -146,7 +195,8 @@ export function validateGuess(state: DuelState, player: PlayerId, input: string)
 }
 
 export function canLockIn(state: DuelState, player: PlayerId): boolean {
-  return !state.outcome && !state.locked[player];
+  if (state.outcome) return false;
+  return isShared(state) ? state.turn === player : !state.locked[player];
 }
 
 /**
@@ -155,6 +205,7 @@ export function canLockIn(state: DuelState, player: PlayerId): boolean {
  */
 export function lockIn(state: DuelState, player: PlayerId, guess: string | null, timeMs: number): DuelState {
   if (state.outcome) throw new Error('The standoff is over');
+  if (isShared(state) && state.turn !== player) throw new Error(`Not ${player}'s turn`);
   if (state.locked[player]) throw new Error(`${player} already locked in this round`);
 
   let word: string | null = null;
@@ -163,6 +214,7 @@ export function lockIn(state: DuelState, player: PlayerId, guess: string | null,
     if (!check.ok) throw new Error(check.message);
     word = check.guess;
   }
+  if (isShared(state)) return fireShared(state, player, word, Math.max(0, timeMs));
 
   const next: DuelState = {
     ...state,
@@ -226,6 +278,32 @@ function resolveRound(state: DuelState): DuelState {
   };
 }
 
+/** Shared board: score the shot immediately, check for a win, pass the turn. */
+function fireShared(state: DuelState, player: PlayerId, guess: string | null, timeMs: number): DuelState {
+  const row = scoreRow({ guess, marks: null, timeMs }, state.config.answer);
+  const shotNumber = state.boards[player].rows.length + 1;
+  const boards = { ...state.boards, [player]: addRow(state.boards[player], row, shotNumber) };
+  const rowNumber = state.round + 1;
+  const base: DuelState = {
+    ...state,
+    boards,
+    order: [...(state.order ?? []), player],
+    lastShot: { by: player, row },
+    round: rowNumber,
+    turn: opponentOf(player),
+  };
+  const end = (winner: PlayerId | null, reason: OutcomeReason): DuelState => ({
+    ...base,
+    outcome: { winner, reason, rounds: rowNumber, suddenDeath: state.suddenDeath },
+  });
+
+  if (isSolved(row.marks)) return end(player, 'solved');
+  if (rowNumber < state.maxRows) return base;
+  if (state.suddenDeath) return end(null, 'exhausted');
+  // Board full: reveal a letter, one more shot each.
+  return { ...base, suddenDeath: true, maxRows: state.maxRows + 2, hint: pickSuddenDeathHint(base) };
+}
+
 /** Reveals a letter neither player has pinned down yet, if there is one. */
 function pickSuddenDeathHint(state: DuelState): SuddenDeathHint {
   const { answer, seed } = state.config;
@@ -235,9 +313,10 @@ function pickSuddenDeathHint(state: DuelState): SuddenDeathHint {
       row.marks?.forEach((m, i) => m === 'correct' && known.add(i));
     }
   }
-  const open = [...Array(WORD_LENGTH).keys()].filter((i) => !known.has(i));
+  const positions = [...Array(wordLengthOf(state)).keys()];
+  const open = positions.filter((i) => !known.has(i));
   const rng = createRng(`${seed}:sudden-death`);
-  const index = rng.pick(open.length ? open : [...Array(WORD_LENGTH).keys()]);
+  const index = rng.pick(open.length ? open : positions);
   return { index, letter: answer[index] };
 }
 
@@ -245,22 +324,24 @@ export function scoutsLeft(state: DuelState): number {
   return Math.max(0, (state.config.scouts ?? 0) - (state.scouted?.length ?? 0));
 }
 
-/** Answer positions you already know: your greens plus scouted letters. */
+/** Answer positions you already know: greens you can see plus scouted letters. */
 function knownToYou(state: DuelState): Set<number> {
   const known = new Set(state.scouted ?? []);
-  for (const row of state.boards.you.rows) row.marks?.forEach((m, i) => m === 'correct' && known.add(i));
+  for (const { marks } of visibleHistory(state, 'you')) marks.forEach((m, i) => m === 'correct' && known.add(i));
   return known;
 }
 
 export function canScout(state: DuelState): boolean {
-  return !state.outcome && !state.locked.you && scoutsLeft(state) > 0 && knownToYou(state).size < WORD_LENGTH;
+  return (
+    canLockIn(state, 'you') && scoutsLeft(state) > 0 && knownToYou(state).size < wordLengthOf(state)
+  );
 }
 
 /** Reveals one answer letter you haven't found yet, adding a time penalty. */
 export function scout(state: DuelState): DuelState {
   if (!canScout(state)) return state;
   const known = knownToYou(state);
-  const open = [...Array(WORD_LENGTH).keys()].filter((i) => !known.has(i));
+  const open = [...Array(wordLengthOf(state)).keys()].filter((i) => !known.has(i));
   const rng = createRng(`${state.config.seed}:scout:${state.scouted?.length ?? 0}`);
   const index = rng.pick(open);
   const you = state.boards.you;

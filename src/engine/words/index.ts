@@ -1,20 +1,35 @@
-import { WORD_LENGTH } from '../types';
 import { ANSWERS } from './answers';
+import { ANSWERS_4 } from './answers4';
 import { GUESSES_PACKED } from './guesses';
+import { GUESSES4_PACKED } from './guesses4';
 
-export { ANSWERS };
+export { ANSWERS, ANSWERS_4 };
 
-let accepted: Set<string> | null = null;
+/** Word lengths the game supports. */
+export type WordLength = 4 | 5;
+export const WORD_LENGTHS: WordLength[] = [4, 5];
 
-/** Every word the game accepts as a guess: answers plus the extra list. */
-export function acceptedWords(): Set<string> {
-  if (!accepted) {
-    accepted = new Set(ANSWERS);
-    for (let i = 0; i < GUESSES_PACKED.length; i += WORD_LENGTH) {
-      accepted.add(GUESSES_PACKED.slice(i, i + WORD_LENGTH));
-    }
+const SOURCES: Record<WordLength, { answers: readonly string[]; packed: string }> = {
+  4: { answers: ANSWERS_4, packed: GUESSES4_PACKED },
+  5: { answers: ANSWERS, packed: GUESSES_PACKED },
+};
+
+const accepted: Partial<Record<WordLength, Set<string>>> = {};
+
+export function answersFor(length: WordLength = 5): readonly string[] {
+  return SOURCES[length].answers;
+}
+
+/** Every word of this length the game accepts as a guess: answers plus the extra list. */
+export function acceptedWords(length: WordLength = 5): Set<string> {
+  let set = accepted[length];
+  if (!set) {
+    const { answers, packed } = SOURCES[length];
+    set = new Set(answers);
+    for (let i = 0; i < packed.length; i += length) set.add(packed.slice(i, i + length));
+    accepted[length] = set;
   }
-  return accepted;
+  return set;
 }
 
 export function normalizeWord(input: string): string {
@@ -22,9 +37,11 @@ export function normalizeWord(input: string): string {
 }
 
 export function isAcceptedWord(word: string): boolean {
-  return acceptedWords().has(normalizeWord(word));
+  const w = normalizeWord(word);
+  return (w.length === 4 || w.length === 5) && acceptedWords(w.length).has(w);
 }
 
 export function isAnswerWord(word: string): boolean {
-  return ANSWERS.includes(normalizeWord(word));
+  const w = normalizeWord(word);
+  return (w.length === 4 || w.length === 5) && answersFor(w.length).includes(w);
 }
