@@ -1,7 +1,8 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Mark } from '../engine';
-import { radius, useTheme } from '../theme';
+import { fonts, radius, useTheme } from '../theme';
 
 const ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
 
@@ -18,6 +19,7 @@ interface KeyProps {
   value: string;
   flex?: number;
   mark?: Mark;
+  kind?: 'letter' | 'fire' | 'back';
   disabled: boolean;
   a11y?: string;
   onPress(value: string): void;
@@ -25,32 +27,49 @@ interface KeyProps {
 
 // Defined at module level (and memoized) so keys aren't remounted on every
 // render, which would drop taps that land mid-render during fast typing.
-const Key = memo(function Key({ label, value, flex = 1, mark, disabled, a11y, onPress }: KeyProps) {
-  const { markColor } = useTheme();
-  const { bg, fg } = markColor(mark);
+const Key = memo(function Key({ label, value, flex = 1, mark, kind = 'letter', disabled, a11y, onPress }: KeyProps) {
+  const { c, markColor } = useTheme();
+  const scored = markColor(mark);
+  const bg = kind === 'fire' ? c.brass : kind === 'back' ? c.cardEdge : scored.bg;
+  const fg = kind === 'fire' ? c.onBrass : kind === 'back' ? c.cardInk : scored.fg;
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={a11y ?? label}
       disabled={disabled}
       onPress={() => onPress(value)}
-      style={({ pressed }) => [styles.key, { flex, backgroundColor: bg, opacity: disabled ? 0.55 : pressed ? 0.7 : 1 }]}
+      style={({ pressed }) => [
+        styles.key,
+        {
+          flex,
+          backgroundColor: bg,
+          opacity: disabled ? 0.5 : 1,
+          transform: [{ translateY: pressed ? 2 : 0 }],
+          shadowOpacity: pressed ? 0 : 0.45,
+        },
+      ]}
     >
-      <Text style={[styles.label, { color: fg }]}>{label}</Text>
+      {kind === 'back' ? (
+        <MaterialCommunityIcons name="backspace-outline" size={22} color={fg} />
+      ) : (
+        <Text style={[kind === 'fire' ? styles.fire : styles.label, { color: fg }]}>{label}</Text>
+      )}
     </Pressable>
   );
 });
 
+/** Cream card-stock keys on the walnut rail; FIRE is the one brass key. */
 export function Keyboard({ keys, disabled, onLetter, onFire, onBack }: Props) {
+  const { c } = useTheme();
   return (
-    <View style={styles.wrap}>
+    <View style={[styles.rail, { backgroundColor: c.walnut }]}>
       {ROWS.map((row, r) => (
         <View key={row} style={styles.row}>
-          {r === 2 && <Key label="FIRE" value="fire" flex={1.6} disabled={disabled} onPress={onFire} a11y="Fire guess" />}
+          {r === 2 && <Key label="FIRE" value="fire" kind="fire" flex={1.7} disabled={disabled} onPress={onFire} a11y="Fire guess" />}
           {row.split('').map((l) => (
             <Key key={l} label={l.toUpperCase()} value={l} mark={keys[l]} disabled={disabled} onPress={onLetter} />
           ))}
-          {r === 2 && <Key label="⌫" value="back" flex={1.6} disabled={disabled} onPress={onBack} a11y="Delete letter" />}
+          {r === 2 && <Key label="Delete" value="back" kind="back" flex={1.5} disabled={disabled} onPress={onBack} a11y="Delete letter" />}
         </View>
       ))}
     </View>
@@ -58,8 +77,18 @@ export function Keyboard({ keys, disabled, onLetter, onFire, onBack }: Props) {
 }
 
 const styles = StyleSheet.create({
-  wrap: { gap: 8, paddingHorizontal: 8 },
+  rail: { gap: 8, paddingHorizontal: 6, paddingTop: 10, paddingBottom: 6 },
   row: { flexDirection: 'row', gap: 5, justifyContent: 'center' },
-  key: { height: 56, borderRadius: radius.key, alignItems: 'center', justifyContent: 'center' },
-  label: { fontSize: 14, fontWeight: '700' },
+  key: {
+    height: 54,
+    borderRadius: radius.key,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowRadius: 0.5,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  label: { fontFamily: fonts.slab, fontSize: 19 },
+  fire: { fontFamily: fonts.display, fontSize: 15, letterSpacing: 1 },
 });
