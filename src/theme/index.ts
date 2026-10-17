@@ -2,50 +2,83 @@ import { useColorScheme } from 'react-native';
 import type { Mark } from '../engine';
 import { useSettings } from '../store/settings';
 
-/** Tokens from DESIGN.md. */
+/**
+ * Saloon Card Table. Brown baize felt for the duel table, a walnut rail around
+ * it, cream card stock for tiles and keys, brass for the primary action and
+ * scout chips. The two seats are hard halves: ink navy for you, oxblood for
+ * the rival.
+ */
 const light = {
-  canvas: '#f9f4f2',
-  surface: '#ffffff',
-  ink: '#2d2c2b',
-  inkSoft: '#63605d',
-  hairline: '#e2ded9',
-  you: '#0061ef',
-  youSoft: '#dce8fd',
-  rival: '#d6336c',
-  rivalSoft: '#fadbe6',
-  correct: '#02873e',
-  present: '#ffce00',
-  absent: '#8a8580',
-  onCorrect: '#ffffff',
-  onPresent: '#2d2c2b',
-  onAbsent: '#ffffff',
-  danger: '#c92a2a',
-  dusk: '#3b197f',
-  keyIdle: '#e2ded9',
+  // Paper screens (home, lists, settings): aged cream card stock with walnut ink.
+  canvas: '#efe3cb',
+  surface: '#f8efdd',
+  ink: '#2e1d13',
+  inkSoft: '#6b5240',
+  hairline: '#d8c6a5',
+  // The table.
+  felt: '#5a3a24',
+  feltDeep: '#472d1b',
+  feltInk: '#f1e3c6',
+  feltInkSoft: '#c9b18c',
+  walnut: '#2e1d13',
+  walnutInk: '#efe3cb',
+  // Cards (tiles and keys).
+  card: '#f6ead2',
+  cardEdge: '#cdb48a',
+  cardInk: '#2e1d13',
+  cardBack: '#7d2a22',
+  // The seats.
+  you: '#24344f',
+  youSoft: '#d7dbe3',
+  rival: '#9e2b25',
+  rivalSoft: '#f0d6cf',
+  // Brass: primary action, scout chips, stars.
+  brass: '#b8862b',
+  brassDeep: '#8f6519',
+  onBrass: '#24170e',
+  // Tile results.
+  correct: '#4f6b2e',
+  present: '#c8962e',
+  absent: '#8a7562',
+  onCorrect: '#f6ead2',
+  onPresent: '#24170e',
+  onAbsent: '#f6ead2',
+  danger: '#b33a1f',
+  dusk: '#2a1a26',
+  keyIdle: '#f6ead2',
 };
 
 export type Palette = typeof light;
 
 const dark: Palette = {
   ...light,
-  canvas: '#1b1a19',
-  surface: '#262523',
-  ink: '#f4efe9',
-  inkSoft: '#a8a29b',
-  hairline: '#3a3835',
-  you: '#4d8ef7',
-  youSoft: '#1d2c48',
-  rival: '#f06595',
-  rivalSoft: '#4a1f30',
-  correct: '#2b9a52',
-  present: '#e6b800',
-  absent: '#4a4744',
-  keyIdle: '#3a3835',
+  canvas: '#1f150e',
+  surface: '#2a1d14',
+  ink: '#f1e3c6',
+  inkSoft: '#c2a985',
+  hairline: '#45321f',
+  felt: '#3f2818',
+  feltDeep: '#2f1d11',
+  walnut: '#140d08',
+  card: '#eadbbd',
+  cardEdge: '#a68b62',
+  you: '#4f6fa6',
+  youSoft: '#25324a',
+  rival: '#d9645a',
+  rivalSoft: '#4a1f1b',
+  absent: '#6f5d4c',
+  keyIdle: '#eadbbd',
 };
 
-const colorblind = { correct: '#f5793a', present: '#85c0f9', onPresent: '#2d2c2b' };
+const colorblind = { correct: '#d4721f', present: '#5d8fc9', onPresent: '#f6ead2' };
 
-export const radius = { tile: 8, key: 8, card: 16, panel: 24, button: 32, pill: 999 };
+export const fonts = {
+  display: 'Ultra_400Regular',
+  slab: 'ZillaSlab_700Bold',
+  slabSemi: 'ZillaSlab_600SemiBold',
+};
+
+export const radius = { tile: 6, key: 6, card: 12, panel: 18, button: 14, pill: 999 };
 export const space = { xs: 4, sm: 8, md: 12, base: 16, lg: 24, xl: 32, xxl: 48 };
 
 export const motion = {
@@ -77,7 +110,7 @@ export function useTheme(): Theme {
       if (mark === 'correct') return { bg: c.correct, fg: c.onCorrect };
       if (mark === 'present') return { bg: c.present, fg: c.onPresent };
       if (mark === 'absent') return { bg: c.absent, fg: c.onAbsent };
-      return { bg: c.keyIdle, fg: c.ink };
+      return { bg: c.card, fg: c.cardInk };
     },
   };
 }
