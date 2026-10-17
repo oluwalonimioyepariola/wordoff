@@ -35,9 +35,9 @@ export function RivalBoard({ rows, totalRows, cell = 14, showLetters = false, ty
                     { width: cell, height: cell },
                     mark
                       ? { backgroundColor: markColor(mark).bg }
-                      : typed
-                        ? { backgroundColor: c.rivalSoft, borderWidth: 1, borderColor: c.rival }
-                        : { borderWidth: 1, borderColor: c.hairline, borderStyle: blank ? 'dashed' : 'solid' },
+                      : typed || blank
+                        ? { backgroundColor: c.cardBack, borderWidth: 1, borderColor: c.card }
+                        : { borderWidth: 1, borderColor: c.feltInkSoft, borderStyle: 'dashed' },
                   ]}
                 >
                   {showLetters && row?.guess && (
