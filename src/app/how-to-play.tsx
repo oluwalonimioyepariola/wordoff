@@ -59,7 +59,7 @@ export default function HowToPlay() {
 
       <Card>
         <H>Every day</H>
-        <P>A new Daily Standoff drops at midnight: same word and same rival for everyone. Play daily to grow your 🔥 streak. Every 7 days earns a ❄️ freeze that saves your streak if you miss a day.</P>
+        <P>A new Daily Standoff drops at midnight, played by the classic standoff rules: separate boards, both fire at once, 3-2-1 DRAW. Everyone gets the same word and the same rival game, so your share card means something. Play daily to grow your 🔥 streak. Every 7 days earns a ❄️ freeze that saves your streak if you miss a day.</P>
       </Card>
 
       <Button label="Saddle up" onPress={done} />

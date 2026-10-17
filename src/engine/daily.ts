@@ -1,3 +1,4 @@
+import type { DuelConfig } from './duel';
 import { createRng, shuffled } from './rng';
 import { OpponentId } from './types';
 import { ANSWERS } from './words';
@@ -59,6 +60,26 @@ export function dailyOpponent(n: number): OpponentId {
 /** Seed for the daily AI so its guesses and timing are the same for everyone. */
 export function dailySeed(n: number): string {
   return `daily-${n}`;
+}
+
+/**
+ * The Daily Standoff is always a split-board standoff: the rival plays its own
+ * board from the day's seed and only learns from its own guesses, so every
+ * player faces exactly the same rival game and results can be compared.
+ */
+export function dailyConfig(n: number, rules: { hardMode: boolean; shotClockMs: number | null }): DuelConfig {
+  return {
+    answer: dailyAnswer(n),
+    opponent: dailyOpponent(n),
+    mode: 'daily',
+    hardMode: rules.hardMode,
+    shotClockMs: rules.shotClockMs,
+    seed: dailySeed(n),
+    dayNumber: n,
+    board: 'split',
+    wordLength: 5,
+    maxRows: 6,
+  };
 }
 
 export function msUntilNextDay(now: Date = new Date()): number {

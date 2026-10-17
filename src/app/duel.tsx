@@ -11,9 +11,7 @@ import { Avatar, Button, H, P } from '../components/ui';
 import {
   buildShareText,
   createDuel,
-  dailyAnswer,
-  dailyOpponent,
-  dailySeed,
+  dailyConfig,
   dayNumber,
   DuelState,
   getAchievement,
@@ -54,18 +52,7 @@ export default function DuelScreen() {
     if (mode === 'daily') {
       const day = dayNumber();
       if (activeDaily?.config.dayNumber === day) return activeDaily;
-      return createDuel({
-        answer: dailyAnswer(day),
-        opponent: dailyOpponent(day),
-        mode: 'daily',
-        hardMode: settings.hardMode,
-        shotClockMs,
-        seed: dailySeed(day),
-        dayNumber: day,
-        board: 'shared',
-        wordLength: 5,
-        maxRows: 6,
-      });
+      return createDuel(dailyConfig(day, { hardMode: settings.hardMode, shotClockMs }));
     }
     if (mode === 'level') {
       if (!levelId || levelId > stats.levels.unlocked) return null;

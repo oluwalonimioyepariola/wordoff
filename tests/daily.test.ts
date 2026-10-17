@@ -3,6 +3,12 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   ANSWERS,
+  createBrain,
+  createDuel,
+  dailyConfig,
+  DuelState,
+  lockIn,
+  visibleHistory,
   dailyAnswer,
   dailyOpponent,
   dateForDayNumber,
@@ -58,5 +64,28 @@ describe('daily standoff', () => {
     assert.equal(ms, 3_600_000);
     assert.equal(formatCountdown(ms), '01:00:00');
     assert.equal(formatCountdown(-5), '00:00:00');
+  });
+
+  it('is a split standoff where the rival plays the same game for every player', () => {
+    const day = 171;
+    const config = dailyConfig(day, { hardMode: false, shotClockMs: null });
+    assert.equal(config.board, 'split');
+
+    // Two players with completely different guesses face the same rival rows.
+    const play = (guesses: string[]) => {
+      let s: DuelState = createDuel(config);
+      const brain = createBrain(config.opponent, config.seed, config.tuning, 5);
+      for (const g of guesses) {
+        if (s.outcome) break;
+        const ai = brain.nextGuess(visibleHistory(s, 'ai'), s.hint, s.boards.ai.rows.length);
+        s = lockIn(lockIn(s, 'you', g, 4000), 'ai', ai, brain.thinkTimeMs(s.round));
+      }
+      return s.boards.ai.rows.map((r) => r.guess);
+    };
+    const a = play(['plumb', 'fight', 'dusky', 'vowel', 'jumpy', 'stock']);
+    const b = play(['crane', 'tiger', 'mound', 'shelf', 'quack', 'brisk']);
+    const n = Math.min(a.length, b.length);
+    assert.ok(n >= 1);
+    assert.deepEqual(a.slice(0, n), b.slice(0, n));
   });
 });

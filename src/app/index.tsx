@@ -88,6 +88,10 @@ export default function Home() {
               <Text style={{ color: c.inkSoft }}>{todayRival.title}</Text>
             </View>
           </View>
+          <P soft>
+            Standoff rules: you each play your own board and fire at once. Everyone gets the same word and the same{' '}
+            {todayRival.shortName} game today, so compare cards with friends.
+          </P>
           {record ? (
             <>
               <P>
