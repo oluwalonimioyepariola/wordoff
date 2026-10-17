@@ -16,6 +16,8 @@ export type Strategy = 'loose' | 'consistent' | 'information';
 export interface OpponentProfile {
   id: OpponentId;
   name: string;
+  /** What the game calls them mid-duel ("Rae has locked in"). */
+  shortName: string;
   title: string;
   blurb: string;
   /** 1–3, shown as difficulty pips. */
@@ -32,6 +34,7 @@ export const OPPONENTS: Record<OpponentId, OpponentProfile> = {
   rookie: {
     id: 'rookie',
     name: 'Rookie Rae',
+    shortName: 'Rae',
     title: 'The Greenhorn',
     blurb: 'Fresh off the stagecoach. Shoots from the hip and forgets half the clues.',
     difficulty: 1,
@@ -53,6 +56,7 @@ export const OPPONENTS: Record<OpponentId, OpponentProfile> = {
   gunslinger: {
     id: 'gunslinger',
     name: 'Dusty Vance',
+    shortName: 'Dusty',
     title: 'The Gunslinger',
     blurb: 'Steady hands, sharp eyes. Reads most clues, but trusts gut over math.',
     difficulty: 2,
@@ -74,6 +78,7 @@ export const OPPONENTS: Record<OpponentId, OpponentProfile> = {
   sheriff: {
     id: 'sheriff',
     name: 'The Sheriff',
+    shortName: 'The Sheriff',
     title: 'Law of the Land',
     blurb: 'Calculates every possibility. Fast, cold, and almost never wrong.',
     difficulty: 3,

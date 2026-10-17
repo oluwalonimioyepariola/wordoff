@@ -13,6 +13,19 @@ const PROBE_SAMPLE = 250;
 /** How much more likely a loose AI is to use its clues with each row played. */
 const PRESSURE_PER_ROW = 0.08;
 
+/**
+ * Per-game adjustments on top of an opponent's profile. Level mode uses these
+ * to start rivals off weak and sharpen them as the levels climb.
+ */
+export interface BrainTuning {
+  /** Overrides the profile's chance of using every clue (loose/consistent strategies). */
+  clueDiscipline?: number;
+  /** The first N rows are wild shots that ignore clues (the AI still learns from them). */
+  warmupRows?: number;
+  /** Overrides the simulated aiming time. */
+  thinkMs?: { min: number; max: number };
+}
+
 export interface AiBrain {
   profile: OpponentProfile;
   /**
@@ -24,8 +37,14 @@ export interface AiBrain {
   thinkTimeMs(round: number): number;
 }
 
-export function createBrain(opponent: OpponentId, seed: string): AiBrain {
-  const profile = getOpponent(opponent);
+export function createBrain(opponent: OpponentId, seed: string, tuning: BrainTuning = {}): AiBrain {
+  const base = getOpponent(opponent);
+  const profile: OpponentProfile = {
+    ...base,
+    clueDiscipline: tuning.clueDiscipline ?? base.clueDiscipline,
+    thinkMs: tuning.thinkMs ?? base.thinkMs,
+  };
+  const warmupRows = tuning.warmupRows ?? 0;
   // Randomness is derived per round rather than from one running sequence, so
   // a duel resumed after the app was closed plays out exactly the same.
   const roundRng = (round: number, purpose: string) => createRng(`${seed}:${opponent}:${round}:${purpose}`);
@@ -36,7 +55,10 @@ export function createBrain(opponent: OpponentId, seed: string): AiBrain {
     const fresh = (words: string[]) => words.filter((w) => !tried.has(w));
 
     if (history.length === 0 && !hint) {
-      return profile.strategy === 'loose' ? rng.pick(ANSWERS) : rng.pick(OPENERS);
+      return profile.strategy === 'loose' || warmupRows > 0 ? rng.pick(ANSWERS) : rng.pick(OPENERS);
+    }
+    if (history.length < warmupRows && !hint) {
+      return rng.pick(fresh(ANSWERS.slice()));
     }
 
     const candidates = fresh(filterCandidates(ANSWERS, history, hint));

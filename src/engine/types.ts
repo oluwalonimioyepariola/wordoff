@@ -8,7 +8,7 @@ export type PlayerId = 'you' | 'ai';
 
 export type OpponentId = 'rookie' | 'gunslinger' | 'sheriff';
 
-export type DuelMode = 'daily' | 'quick';
+export type DuelMode = 'daily' | 'quick' | 'level';
 
 export interface ScoredGuess {
   guess: string;

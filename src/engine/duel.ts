@@ -1,3 +1,4 @@
+import type { BrainTuning } from './ai/brain';
 import { isSolved, scoreGuess } from './evaluate';
 import { hardModeViolation } from './hardMode';
 import { createRng } from './rng';
@@ -25,7 +26,11 @@ import { isAcceptedWord, normalizeWord } from './words';
  * - Nobody solves in six rows: sudden death. One letter is revealed to both
  *   and each gets one final shot.
  * - An empty shot clock fires a blank: the row is spent with no guess.
+ * - Scouting reveals one of the answer's letters to you, at a time penalty.
  */
+
+/** Time added to your total for each scout (only matters in a photo finish). */
+export const SCOUT_PENALTY_MS = 10_000;
 
 export interface DuelConfig {
   answer: string;
@@ -37,6 +42,11 @@ export interface DuelConfig {
   /** Seeds the AI and the sudden-death hint. */
   seed: string;
   dayNumber?: number;
+  levelId?: number;
+  /** How many letters you may scout this duel (default 0). */
+  scouts?: number;
+  /** Level-mode adjustments to the rival. */
+  tuning?: BrainTuning;
 }
 
 export interface DuelRow {
@@ -86,6 +96,8 @@ export interface DuelState {
   locked: Partial<Record<PlayerId, DuelRow>>;
   lastReveal: RoundReveal | null;
   outcome: DuelOutcome | null;
+  /** Answer positions you've scouted, in the order you scouted them. */
+  scouted: number[];
 }
 
 export type GuessCheck =
@@ -105,6 +117,7 @@ export function createDuel(config: DuelConfig): DuelState {
     locked: {},
     lastReveal: null,
     outcome: null,
+    scouted: [],
   };
 }
 
@@ -226,6 +239,43 @@ function pickSuddenDeathHint(state: DuelState): SuddenDeathHint {
   const rng = createRng(`${seed}:sudden-death`);
   const index = rng.pick(open.length ? open : [...Array(WORD_LENGTH).keys()]);
   return { index, letter: answer[index] };
+}
+
+export function scoutsLeft(state: DuelState): number {
+  return Math.max(0, (state.config.scouts ?? 0) - (state.scouted?.length ?? 0));
+}
+
+/** Answer positions you already know: your greens plus scouted letters. */
+function knownToYou(state: DuelState): Set<number> {
+  const known = new Set(state.scouted ?? []);
+  for (const row of state.boards.you.rows) row.marks?.forEach((m, i) => m === 'correct' && known.add(i));
+  return known;
+}
+
+export function canScout(state: DuelState): boolean {
+  return !state.outcome && !state.locked.you && scoutsLeft(state) > 0 && knownToYou(state).size < WORD_LENGTH;
+}
+
+/** Reveals one answer letter you haven't found yet, adding a time penalty. */
+export function scout(state: DuelState): DuelState {
+  if (!canScout(state)) return state;
+  const known = knownToYou(state);
+  const open = [...Array(WORD_LENGTH).keys()].filter((i) => !known.has(i));
+  const rng = createRng(`${state.config.seed}:scout:${state.scouted?.length ?? 0}`);
+  const index = rng.pick(open);
+  const you = state.boards.you;
+  return {
+    ...state,
+    scouted: [...(state.scouted ?? []), index],
+    boards: { ...state.boards, you: { ...you, totalMs: you.totalMs + SCOUT_PENALTY_MS } },
+  };
+}
+
+/** Letters revealed to you: scouted ones plus the sudden-death hint. */
+export function revealedToYou(state: DuelState): SuddenDeathHint[] {
+  const hints = (state.scouted ?? []).map((index) => ({ index, letter: state.config.answer[index] }));
+  if (state.hint && !hints.some((h) => h.index === state.hint!.index)) hints.push(state.hint);
+  return hints.sort((a, b) => a.index - b.index);
 }
 
 export function forfeit(state: DuelState, player: PlayerId): DuelState {

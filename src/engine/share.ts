@@ -25,8 +25,18 @@ export function buildShareText(state: DuelState, options: { colorblind?: boolean
   const { config, boards, outcome } = state;
   const rival = getOpponent(config.opponent).name;
 
-  const title = config.mode === 'daily' && config.dayNumber !== undefined ? `Wordoff #${config.dayNumber}` : 'Wordoff Quick Duel';
-  const flags = [config.hardMode && 'hard', config.shotClockMs !== null && 'shot clock'].filter(Boolean);
+  const title =
+    config.mode === 'daily' && config.dayNumber !== undefined
+      ? `Wordoff #${config.dayNumber}`
+      : config.mode === 'level' && config.levelId !== undefined
+        ? `Wordoff Level ${config.levelId}`
+        : 'Wordoff Quick Duel';
+  const scouts = state.scouted?.length ?? 0;
+  const flags = [
+    config.hardMode && 'hard',
+    config.shotClockMs !== null && 'shot clock',
+    scouts > 0 && `🔍×${scouts}`,
+  ].filter(Boolean);
   const result = !outcome
     ? 'in progress'
     : outcome.winner === 'you'
