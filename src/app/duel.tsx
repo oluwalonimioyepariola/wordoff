@@ -25,6 +25,7 @@ import {
   outcomeHeadline,
   pickQuickAnswer,
   randomSeed,
+  rowOwners,
   sharedRows,
   starsFor,
   wordLengthOf,
@@ -90,7 +91,6 @@ export default function DuelScreen() {
         board: level.board,
         wordLength: level.wordLength,
         maxRows: level.maxRows,
-        headStart: level.headStart,
         firstShooter: level.firstShooter,
       });
     }
@@ -334,7 +334,7 @@ function StandoffView({ initial, onNext, onLevel }: ViewProps) {
                 shots={g.shots}
                 totalRows={state.maxRows}
                 length={g.length}
-                turn={state.turn}
+                owners={rowOwners(state)}
                 input={g.yourTurn ? g.input : null}
                 rivalTyping={g.rivalTyping}
                 revealingRow={g.revealingRow}
@@ -415,7 +415,7 @@ function ResultPanel({ state, rivalName, unlocked, stars, matchLine }: ResultPro
             shots={sharedRows(state)}
             totalRows={state.order?.length ?? 0}
             length={wordLengthOf(state)}
-            turn={state.turn}
+            owners={state.order ?? []}
             input={null}
             rivalTyping={null}
             revealingRow={null}

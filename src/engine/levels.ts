@@ -27,8 +27,6 @@ export interface LevelDef {
   maxRows: number;
   tuning: BrainTuning;
   scouts: number;
-  /** Shots you fire before the rival's first turn. */
-  headStart: number;
   /** Who takes the first shot. */
   firstShooter: PlayerId;
   shotClockMs: number | null;
@@ -95,18 +93,16 @@ function buildLevels(): LevelDef[] {
       const boss = step === 9;
       let tuning: BrainTuning;
       let scouts: number;
-      let headStart = 0;
       let firstShooter: PlayerId = 'you';
       let shotClockMs: number | null = null;
       let hardMode = false;
       if (c === 0) {
         tuning = { warmupRows: Math.round(ramp(step, 3, 1)), clueDiscipline: ramp(step, 0, 0.2) };
-        scouts = Math.round(ramp(step, 3, 1));
-        headStart = step < 4 ? 2 : step < 8 ? 1 : 0;
+        scouts = step < 5 ? 3 : 2;
       } else if (c === 1) {
         tuning = { warmupRows: Math.round(ramp(step, 2, 0)), clueDiscipline: ramp(step, 0.25, 0.6) };
         scouts = step < 5 ? 1 : 0;
-        headStart = step < 3 ? 1 : 0;
+
         if (step >= 7) shotClockMs = 60_000;
       } else {
         tuning = {};
@@ -127,7 +123,6 @@ function buildLevels(): LevelDef[] {
         maxRows: 6,
         tuning,
         scouts,
-        headStart,
         firstShooter,
         shotClockMs,
         hardMode,
@@ -169,7 +164,6 @@ export function starsFor(level: LevelDef, won: boolean, solvedRow: number | null
 export function levelBlurb(level: LevelDef): string {
   const rival = getOpponent(level.opponent).name;
   const extras = [
-    level.headStart > 0 && `${level.headStart}-shot head start`,
     level.firstShooter === 'ai' && `${rival.replace('The ', '')} shoots first`,
     level.scouts > 0 && `${level.scouts} scout${level.scouts > 1 ? 's' : ''}`,
     level.shotClockMs && `${level.shotClockMs / 1000}s shot clock`,

@@ -7,8 +7,8 @@ interface Props {
   shots: Shot[];
   totalRows: number;
   length: number;
-  /** Whose shot the next empty row belongs to. */
-  turn: PlayerId;
+  /** Who fires each row (from the engine's rowOwners). */
+  owners: PlayerId[];
   /** What you're typing (on your turn). */
   input: string | null;
   /** What the rival is typing (on its turn). */
@@ -28,7 +28,7 @@ export function SharedBoard({
   shots,
   totalRows,
   length,
-  turn,
+  owners,
   input,
   rivalTyping,
   revealingRow,
@@ -38,16 +38,13 @@ export function SharedBoard({
   celebrate = false,
 }: Props) {
   const { c } = useTheme();
-  const other: PlayerId = turn === 'you' ? 'ai' : 'you';
-  // Empty rows alternate from whoever shoots next.
-  const ownerOf = (r: number): PlayerId => ((r - shots.length) % 2 === 0 ? turn : other);
   const marker = Math.max(22, tileSize * 0.5);
 
   return (
     <View style={styles.board} accessibilityLabel="Shared board">
       {Array.from({ length: totalRows }, (_, r) => {
         const shot = shots[r];
-        const owner = shot?.by ?? ownerOf(r);
+        const owner: PlayerId = shot?.by ?? owners[r] ?? 'you';
         const isCurrent = r === shots.length;
         const ownerColor = owner === 'you' ? c.you : c.rival;
         const active = isCurrent && (owner === 'you' ? input !== null : rivalTyping !== null);
