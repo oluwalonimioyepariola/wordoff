@@ -1,9 +1,9 @@
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Avatar, Card, H, P, Screen } from '../components/ui';
+import { Avatar, Card, H, Icon, P, Screen } from '../components/ui';
 import { getOpponent, LEVEL_COUNT, levelBlurb, LEVELS, totalStars } from '../engine';
 import { useProfile } from '../store/profile';
-import { radius, useTheme } from '../theme';
+import { fonts, radius, useTheme } from '../theme';
 
 export default function LevelsScreen() {
   const { c } = useTheme();
@@ -19,9 +19,12 @@ export default function LevelsScreen() {
           <H>
             Level {Math.min(unlocked, LEVEL_COUNT)} of {LEVEL_COUNT}
           </H>
-          <Text style={{ color: c.present, fontWeight: '800', fontSize: 18 }}>
-            ★ {totalStars(stats)}/{LEVEL_COUNT * 3}
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <Icon name="star-four-points" size={18} color={c.brass} />
+            <Text style={{ color: c.ink, fontFamily: fonts.slab, fontSize: 18 }}>
+              {totalStars(stats)}/{LEVEL_COUNT * 3}
+            </Text>
+          </View>
         </View>
         <P soft>
           Up next: {next.title}. {levelBlurb(next)}.
@@ -37,7 +40,7 @@ export default function LevelsScreen() {
             <View style={styles.chapterHead}>
               <Avatar profile={rival} size={36} />
               <View style={{ flex: 1 }}>
-                <Text style={{ color: c.ink, fontWeight: '800', fontSize: 17 }}>
+                <Text style={{ color: c.ink, fontFamily: fonts.slab, fontSize: 18 }}>
                   Chapter {first.chapter}: {first.chapterName}
                 </Text>
                 <Text style={{ color: c.inkSoft }}>
@@ -60,17 +63,25 @@ export default function LevelsScreen() {
                     style={({ pressed }) => [
                       styles.level,
                       {
-                        backgroundColor: current ? c.you : got ? c.surface : c.canvas,
-                        borderColor: current ? c.you : l.boss ? c.rival : c.hairline,
+                        backgroundColor: current ? c.brass : locked ? c.canvas : c.card,
+                        borderColor: current ? c.brassDeep : l.boss ? c.rival : c.cardEdge,
                         borderWidth: l.boss ? 2 : 1,
                         opacity: pressed ? 0.7 : 1,
                       },
                     ]}
                   >
-                    <Text style={{ color: current ? '#fff' : c.ink, fontWeight: '800', fontSize: 18 }}>{locked ? '🔒' : l.id}</Text>
-                    <Text style={{ fontSize: 11, color: current ? '#fff' : c.present }}>
-                      {locked ? ' ' : '★'.repeat(got) + '☆'.repeat(3 - got)}
-                    </Text>
+                    {locked ? (
+                      <Icon name="lock-outline" size={20} color={c.inkSoft} />
+                    ) : (
+                      <Text style={{ color: current ? c.onBrass : c.cardInk, fontFamily: fonts.slab, fontSize: 19 }}>{l.id}</Text>
+                    )}
+                    {!locked && (
+                      <View style={{ flexDirection: 'row' }}>
+                        {[0, 1, 2].map((i) => (
+                          <Icon key={i} name="star-four-points" size={10} color={i < got ? (current ? c.onBrass : c.brass) : current ? c.brassDeep : c.cardEdge} />
+                        ))}
+                      </View>
+                    )}
                   </Pressable>
                 );
               })}
@@ -79,7 +90,7 @@ export default function LevelsScreen() {
         );
       })}
       <P soft center>
-        Early levels give you scouts (🔍) and a rival who warms up with wild shots. Solve in fewer guesses for more stars.
+        Early levels deal easy 4-letter words and brass scout chips. Land the word on your first or second shot for three stars.
       </P>
     </Screen>
   );
