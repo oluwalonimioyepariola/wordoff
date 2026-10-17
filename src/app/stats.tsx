@@ -2,7 +2,7 @@ import { Alert, StyleSheet, Text, View } from 'react-native';
 import { Button, Card, H, P, Screen } from '../components/ui';
 import { dayNumber, getOpponent, OPPONENT_ORDER, streakStatus, totalRecord, winRate } from '../engine';
 import { useProfile } from '../store/profile';
-import { useTheme } from '../theme';
+import { fonts, useTheme } from '../theme';
 
 export default function StatsScreen() {
   const { c } = useTheme();
@@ -94,7 +94,7 @@ export default function StatsScreen() {
 const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap' },
   stat: { width: '25%', paddingVertical: 8, alignItems: 'center' },
-  value: { fontSize: 22, fontWeight: '800' },
+  value: { fontSize: 23, fontFamily: fonts.slab },
   label: { fontSize: 11, textAlign: 'center' },
   distRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   bar: { borderRadius: 4, paddingHorizontal: 6, paddingVertical: 3, alignItems: 'flex-end' },
