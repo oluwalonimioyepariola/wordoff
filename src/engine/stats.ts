@@ -1,5 +1,6 @@
 import { evaluateAchievements } from './achievements';
 import { Board, DuelConfig, DuelOutcome } from './duel';
+import { getLevel, LEVEL_COUNT, starsFor } from './levels';
 import { OpponentId } from './types';
 
 export interface WLD {
@@ -22,8 +23,16 @@ export interface DailyRecord {
   playedAt: number;
 }
 
+export interface LevelProgress {
+  /** Highest level you can play. */
+  unlocked: number;
+  /** Best stars per level id (1–3). */
+  stars: Record<number, number>;
+  attempts: Record<number, number>;
+}
+
 export interface Stats {
-  version: 1;
+  version: 2;
   daily: WLD & {
     played: number;
     /** Consecutive days with a finished Daily Standoff (protected by freezes). */
@@ -39,6 +48,7 @@ export interface Stats {
   };
   duels: WLD & { played: number; winStreak: number; bestWinStreak: number };
   matches: WLD & { played: number; sweeps: number };
+  levels: LevelProgress;
   vs: Record<OpponentId, WLD & { streak: number; bestStreak: number }>;
   /** Index 0–5: solved on row 1–6. Index 6: solved in sudden death. */
   distribution: number[];
@@ -61,7 +71,7 @@ const vsRecord = () => ({ ...wld(), streak: 0, bestStreak: 0 });
 
 export function createStats(): Stats {
   return {
-    version: 1,
+    version: 2,
     daily: {
       ...wld(),
       played: 0,
@@ -76,6 +86,7 @@ export function createStats(): Stats {
     },
     duels: { ...wld(), played: 0, winStreak: 0, bestWinStreak: 0 },
     matches: { ...wld(), played: 0, sweeps: 0 },
+    levels: createLevelProgress(),
     vs: { rookie: vsRecord(), gunslinger: vsRecord(), sheriff: vsRecord() },
     distribution: [0, 0, 0, 0, 0, 0, 0],
     fastestSolveMs: null,
@@ -91,6 +102,16 @@ export function createStats(): Stats {
 /** Stats are plain JSON, so a JSON round-trip is a safe deep copy on every JS engine. */
 function cloneStats(stats: Stats): Stats {
   return JSON.parse(JSON.stringify(stats));
+}
+
+export function createLevelProgress(): LevelProgress {
+  return { unlocked: 1, stars: {}, attempts: {} };
+}
+
+/** Brings stats saved by an older version up to the current shape. */
+export function migrateStats(saved: Partial<Stats> & Record<string, unknown>): Stats {
+  const fresh = createStats();
+  return { ...fresh, ...saved, levels: (saved.levels as LevelProgress) ?? fresh.levels, version: 2 } as Stats;
 }
 
 export function resultFor(outcome: DuelOutcome): ResultKind {
@@ -110,6 +131,7 @@ export interface DuelRecordInput {
   outcome: DuelOutcome;
   you: Board;
   ai: Board;
+  scoutsUsed?: number;
   now?: number;
 }
 
@@ -193,6 +215,13 @@ export function recordDuel(prev: Stats, input: DuelRecordInput): RecordResult {
         playedAt: now,
       };
     }
+  } else if (config.mode === 'level' && config.levelId !== undefined) {
+    const level = getLevel(config.levelId);
+    const lp = stats.levels;
+    lp.attempts[level.id] = (lp.attempts[level.id] ?? 0) + 1;
+    const stars = starsFor(level, won, you.solvedRow);
+    if (stars > (lp.stars[level.id] ?? 0)) lp.stars[level.id] = stars;
+    if (won && level.id === lp.unlocked && lp.unlocked < LEVEL_COUNT) lp.unlocked++;
   } else {
     const q = stats.duels;
     q.played++;
@@ -236,6 +265,10 @@ export function streakStatus(stats: Stats, today: number): { streak: number; sta
   if (gap === 1) return { streak: playStreak, status: 'pending' };
   if (gap - 1 <= freezes) return { streak: playStreak, status: 'at-risk' };
   return { streak: 0, status: 'broken' };
+}
+
+export function totalStars(stats: Stats): number {
+  return Object.values(stats.levels.stars).reduce((a, b) => a + b, 0);
 }
 
 export function winRate(record: WLD): number {

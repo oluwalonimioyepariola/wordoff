@@ -6,6 +6,7 @@ export * from './words';
 export * from './daily';
 export * from './duel';
 export * from './match';
+export * from './levels';
 export * from './stats';
 export * from './achievements';
 export * from './share';

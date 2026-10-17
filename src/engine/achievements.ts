@@ -119,6 +119,37 @@ const RULES: Rule[] = [
     check: (_, e) => e.kind === 'match' && e.sweep,
   },
   {
+    id: 'trail-boss',
+    name: 'Trail Boss',
+    description: 'Clear the Dusty Trail (level 10).',
+    check: (s) => (s.levels?.stars[10] ?? 0) > 0,
+  },
+  {
+    id: 'gulch-runner',
+    name: 'Gulch Runner',
+    description: 'Clear Gunsmoke Gulch (level 20).',
+    check: (s) => (s.levels?.stars[20] ?? 0) > 0,
+  },
+  {
+    id: 'high-noon',
+    name: 'High Noon',
+    description: 'Clear every level.',
+    check: (s) => (s.levels?.stars[30] ?? 0) > 0,
+  },
+  {
+    id: 'sharpshooter',
+    name: 'Sharpshooter',
+    description: 'Earn three stars on ten levels.',
+    check: (s) => Object.values(s.levels?.stars ?? {}).filter((n) => n === 3).length >= 10,
+  },
+  {
+    id: 'no-scouts',
+    name: 'Lone Ranger',
+    description: 'Win a level that offered scouts without using any.',
+    check: (_, e) =>
+      duelWin(e) && e.kind === 'duel' && e.input.config.mode === 'level' && (e.input.config.scouts ?? 0) > 0 && (e.input.scoutsUsed ?? 0) === 0,
+  },
+  {
     id: 'centurion',
     name: 'Centurion',
     description: 'Play 100 standoffs.',
