@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { PlayerId, Shot, SuddenDeathHint } from '../engine';
-import { motion, useTheme } from '../theme';
+import { fonts, motion, useTheme } from '../theme';
 import { Tile } from './Tile';
 
 interface Props {
@@ -11,8 +11,8 @@ interface Props {
   owners: PlayerId[];
   /** What you're typing (on your turn). */
   input: string | null;
-  /** What the rival is typing (on its turn). */
-  rivalTyping: string | null;
+  /** How many cards the rival has dealt face down this turn (on its turn). */
+  rivalDealt: number | null;
   revealingRow: number | null;
   hints: SuddenDeathHint[];
   rivalInitial: string;
@@ -20,9 +20,33 @@ interface Props {
   celebrate?: boolean;
 }
 
+/** A seat chip: a poker chip in the seat's colour, marking who fires a row. */
+function SeatChip({ owner, label, size, active }: { owner: PlayerId; label: string; size: number; active: boolean }) {
+  const { c } = useTheme();
+  const color = owner === 'you' ? c.you : c.rival;
+  return (
+    <View
+      accessibilityLabel={owner === 'you' ? 'Your row' : 'Rival row'}
+      style={[
+        styles.chip,
+        {
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          backgroundColor: active ? color : 'transparent',
+          borderColor: active ? c.feltInk : color,
+          opacity: active ? 1 : 0.6,
+        },
+      ]}
+    >
+      <Text style={{ color: active ? c.feltInk : c.feltInkSoft, fontFamily: fonts.slab, fontSize: size * 0.34 }}>{label}</Text>
+    </View>
+  );
+}
+
 /**
- * One board, taking turns. Each row carries a marker for who fired it:
- * blue "You" or the rival's pink initial. Every guess is visible to both.
+ * The felt between two seats. Turns alternate; each row carries the chip of
+ * whoever fires it. Every card on the felt is visible to both players.
  */
 export function SharedBoard({
   shots,
@@ -30,15 +54,14 @@ export function SharedBoard({
   length,
   owners,
   input,
-  rivalTyping,
+  rivalDealt,
   revealingRow,
   hints,
   rivalInitial,
   tileSize,
   celebrate = false,
 }: Props) {
-  const { c } = useTheme();
-  const marker = Math.max(22, tileSize * 0.5);
+  const chip = Math.max(26, Math.round(tileSize * 0.52));
 
   return (
     <View style={styles.board} accessibilityLabel="Shared board">
@@ -46,33 +69,13 @@ export function SharedBoard({
         const shot = shots[r];
         const owner: PlayerId = shot?.by ?? owners[r] ?? 'you';
         const isCurrent = r === shots.length;
-        const ownerColor = owner === 'you' ? c.you : c.rival;
-        const active = isCurrent && (owner === 'you' ? input !== null : rivalTyping !== null);
+        const active = !!shot || (isCurrent && (owner === 'you' ? input !== null : rivalDealt !== null));
         return (
           <View key={r} style={styles.row}>
-            <View
-              style={[
-                styles.marker,
-                {
-                  width: marker,
-                  height: marker,
-                  borderRadius: marker / 2,
-                  backgroundColor: shot || active ? ownerColor : 'transparent',
-                  borderColor: ownerColor,
-                  opacity: shot || active ? 1 : 0.35,
-                },
-              ]}
-              accessibilityLabel={owner === 'you' ? 'Your row' : 'Rival row'}
-            >
-              <Text style={{ color: shot || active ? '#fff' : ownerColor, fontWeight: '800', fontSize: marker * 0.45 }}>
-                {owner === 'you' ? 'You' : rivalInitial}
-              </Text>
-            </View>
+            <SeatChip owner={owner} label={owner === 'you' ? 'YOU' : rivalInitial} size={chip} active={active} />
             {Array.from({ length }, (_, i) => {
               if (shot) {
-                if (shot.row.guess === null) {
-                  return <View key={i} style={[styles.blank, { width: tileSize, height: tileSize, borderColor: c.inkSoft }]} />;
-                }
+                if (shot.row.guess === null) return <Tile key={i} size={tileSize} letter="" faceDown />;
                 return (
                   <Tile
                     key={i}
@@ -84,14 +87,14 @@ export function SharedBoard({
                   />
                 );
               }
-              if (isCurrent && owner === 'ai' && rivalTyping !== null) {
-                return <Tile key={i} size={tileSize} letter={rivalTyping[i] ?? ''} />;
+              if (isCurrent && owner === 'ai' && rivalDealt !== null) {
+                return <Tile key={i} size={tileSize} letter="" faceDown={i < rivalDealt} />;
               }
               const typed = isCurrent && owner === 'you' ? (input ?? '')[i] ?? '' : '';
               const hint = isCurrent && owner === 'you' && !typed ? hints.find((h) => h.index === i) : undefined;
               return <Tile key={i} size={tileSize} letter={hint ? hint.letter : typed} hint={!!hint} />;
             })}
-            <View style={{ width: marker }} />
+            <View style={{ width: chip }} />
           </View>
         );
       })}
@@ -100,8 +103,7 @@ export function SharedBoard({
 }
 
 const styles = StyleSheet.create({
-  board: { gap: 6, alignItems: 'center' },
-  row: { flexDirection: 'row', gap: 6, alignItems: 'center' },
-  marker: { borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
-  blank: { borderWidth: 2, borderStyle: 'dashed', borderRadius: 8 },
+  board: { gap: 7, alignItems: 'center' },
+  row: { flexDirection: 'row', gap: 7, alignItems: 'center' },
+  chip: { borderWidth: 2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' },
 });
