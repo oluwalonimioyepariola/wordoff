@@ -82,7 +82,8 @@ export function Tile({ letter, mark, flipDelay = null, bounceDelay = null, size,
       accessibilityLabel={letter ? `${letter.toUpperCase()}${mark ? `, ${LABEL[mark]}` : ''}` : 'empty'}
       style={[styles.tile, { width: size, height: size }, tileStyle]}
     >
-      <Animated.Text style={[styles.letter, { fontSize: size * 0.5 }, textStyle]}>{letter.toUpperCase()}</Animated.Text>
+      {/* Full-width box: a tightly measured box clips narrow glyphs like "I" on iOS. */}
+      <Animated.Text style={[styles.letter, { fontSize: size * 0.5, width: size }, textStyle]}>{letter.toUpperCase()}</Animated.Text>
     </Animated.View>
   );
 }
@@ -94,5 +95,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  letter: { fontWeight: '800' },
+  letter: { fontWeight: '800', textAlign: 'center' },
 });
