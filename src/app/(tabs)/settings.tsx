@@ -1,11 +1,11 @@
-import { Card, H, P, Screen, Segmented, ToggleRow } from '../components/ui';
-import type { BoardStyle } from '../engine';
-import { ShotClock, ThemePref, useSettings } from '../store/settings';
+import { Card, H, P, Screen, Segmented, ToggleRow } from '../../components/ui';
+import type { BoardStyle } from '../../engine';
+import { ShotClock, ThemePref, useSettings } from '../../store/settings';
 
 export default function SettingsScreen() {
   const s = useSettings();
   return (
-    <Screen title="Settings">
+    <Screen title="Settings" tab>
       <Card>
         <H>Rules</H>
         <P soft>Quick Duel board</P>
