@@ -3,6 +3,7 @@
  * Everything is drawn here in react-native-svg so it themes with the palette
  * and stays crisp at any size. No raster assets.
  */
+import { memo } from 'react';
 import Svg, { Circle, ClipPath, Defs, Ellipse, G, Line, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 import type { OpponentId } from '../engine';
 
@@ -19,7 +20,7 @@ const CREAM = '#f6ead2';
 const INK = '#2e1d13';
 
 /** A single-action revolver in profile, muzzle to the right. */
-export function Revolver({ width = 72, flip = false }: { width?: number; flip?: boolean }) {
+export const Revolver = memo(function Revolver({ width = 72, flip = false }: { width?: number; flip?: boolean }) {
   return (
     <Svg width={width} height={width / 2} viewBox="0 0 120 60">
       <G transform={flip ? 'translate(120 0) scale(-1 1)' : undefined}>
@@ -46,10 +47,10 @@ export function Revolver({ width = 72, flip = false }: { width?: number; flip?: 
       </G>
     </Svg>
   );
-}
+});
 
 /** The flash at the muzzle when a shot is fired. */
-export function MuzzleFlash({ size = 40 }: { size?: number }) {
+export const MuzzleFlash = memo(function MuzzleFlash({ size = 40 }: { size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 40 40">
       <Path
@@ -59,10 +60,10 @@ export function MuzzleFlash({ size = 40 }: { size?: number }) {
       <Path d="M20 8 L23 16 L31 15 L25 21 L30 28 L21 25 L16 32 L16 24 L8 22 L15 18 L13 11 Z" fill={CREAM} />
     </Svg>
   );
-}
+});
 
 /** One revolver cartridge: brass case, copper bullet. Spent rounds are hollow. */
-export function Cartridge({ height = 26, spent = false }: { height?: number; spent?: boolean }) {
+export const Cartridge = memo(function Cartridge({ height = 26, spent = false }: { height?: number; spent?: boolean }) {
   return (
     <Svg width={height * 0.42} height={height} viewBox="0 0 12 30">
       {spent ? (
@@ -80,7 +81,7 @@ export function Cartridge({ height = 26, spent = false }: { height?: number; spe
       )}
     </Svg>
   );
-}
+});
 
 /** A six-point lawman's star with ball tips. */
 export function SheriffStar({ size = 28, color = BRASS }: { size?: number; color?: string }) {
@@ -235,7 +236,7 @@ function Stranger() {
 const FACES: Record<Who, () => React.JSX.Element> = { rookie: Rae, gunslinger: Dusty, sheriff: Sheriff, you: Stranger };
 
 /** A duelist's portrait in a round frame, used for seats, posters and avatars. */
-export function Portrait({ who, size = 48, ring = BRASS }: { who: Who; size?: number; ring?: string }) {
+export const Portrait = memo(function Portrait({ who, size = 48, ring = BRASS }: { who: Who; size?: number; ring?: string }) {
   const Face = FACES[who];
   const id = `clip-${who}`;
   return (
@@ -252,10 +253,10 @@ export function Portrait({ who, size = 48, ring = BRASS }: { who: Who; size?: nu
       <Circle cx={50} cy={50} r={47} fill="none" stroke={ring} strokeWidth={5} />
     </Svg>
   );
-}
+});
 
 /** A square, unframed version of the portrait for the wanted poster. */
-export function PosterPortrait({ who, size = 120 }: { who: Who; size?: number }) {
+export const PosterPortrait = memo(function PosterPortrait({ who, size = 120 }: { who: Who; size?: number }) {
   const Face = FACES[who];
   return (
     <Svg width={size} height={size} viewBox="0 0 100 100">
@@ -266,7 +267,7 @@ export function PosterPortrait({ who, size = 120 }: { who: Who; size?: number })
       <Rect x={1.5} y={1.5} width={97} height={97} fill="none" stroke={INK} strokeWidth={3} />
     </Svg>
   );
-}
+});
 
 /* ---------- The scene ---------- */
 
