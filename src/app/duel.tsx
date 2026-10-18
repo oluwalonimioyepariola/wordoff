@@ -1,11 +1,14 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import Animated, { useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
 import { Alert, Pressable, ScrollView, Share, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Board } from '../components/Board';
 import { Keyboard } from '../components/Keyboard';
+import { PosterPortrait } from '../art';
+import { AmmoBelt, DrawFlash, Gunfire, PosterIn, Stamp, TumbleweedRoll } from '../components/Motion';
 import { CountdownOverlay, TauntBubble, Toast } from '../components/Overlays';
 import { RivalBoard } from '../components/RivalBoard';
 import { SharedBoard } from '../components/SharedBoard';
@@ -17,6 +20,7 @@ import {
   dayNumber,
   DuelState,
   getAchievement,
+  OpponentId,
   getLevel,
   getOpponent,
   LEVEL_COUNT,
@@ -35,6 +39,12 @@ import { useStandoff } from '../game/useStandoff';
 import { useProfile } from '../store/profile';
 import { useSettings } from '../store/settings';
 import { fonts, radius, space, useTheme } from '../theme';
+
+/** Back out of the duel; after a reload the duel may be the first screen, so fall back to home. */
+function leave() {
+  if (router.canGoBack()) router.back();
+  else router.replace('/');
+}
 
 /** Scouts allowed in a Quick Duel. The Daily has none, so results stay comparable. */
 const QUICK_SCOUTS = 1;
@@ -154,11 +164,11 @@ function StandoffView({ initial, onNext, onLevel }: ViewProps) {
   const over = g.phase === 'result' && !!state.outcome;
   const chip = 28;
   const tile = g.shared
-    ? Math.floor(Math.min(60, (width - 2 * space.base - 2 * chip - (g.length + 1) * 7) / g.length, (height - 540) / state.maxRows))
+    ? Math.floor(Math.min(60, (width - 2 * space.base - 2 * chip - (g.length + 1) * 7) / g.length, (height - 560) / state.maxRows))
     : Math.floor(Math.min(58, (width - 2 * space.base - (g.length - 1) * 7) / g.length, (height - 520) / state.maxRows));
 
   const walkAway = () => {
-    if (state.outcome) return router.back();
+    if (state.outcome) return leave();
     Alert.alert('Walk away?', 'Leaving now counts as a loss.', [
       { text: 'Stay', style: 'cancel' },
       { text: 'Walk away', style: 'destructive', onPress: g.forfeit },
@@ -200,6 +210,30 @@ function StandoffView({ initial, onNext, onLevel }: ViewProps) {
     }
   }
 
+  // Shots: a shared board fires one row at a time; a split board fires both on DRAW!.
+  const [drawCount, setDrawCount] = useState(0);
+  const shake = useSharedValue(0);
+  useEffect(() => {
+    if (g.beat !== 'draw') return;
+    setDrawCount((n) => n + 1);
+    shake.set(withSequence(withTiming(1, { duration: 40 }), withTiming(-1, { duration: 50 }), withTiming(0.5, { duration: 50 }), withTiming(0, { duration: 60 })));
+  }, [g.beat, shake]);
+  const tableShake = useAnimatedStyle(() => ({ transform: [{ translateX: 6 * shake.get() }] }));
+  const youShot = g.shared ? state.boards.you.rows.length : drawCount;
+  const rivalShot = g.shared ? state.boards.ai.rows.length : drawCount;
+
+  // Rounds left: one cartridge per row each player still gets to fire.
+  const owners = g.shared ? rowOwners(state) : [];
+  const ammo = (who: 'you' | 'ai') =>
+    g.shared
+      ? {
+          left: owners.slice(state.order?.length ?? 0).filter((o) => o === who).length,
+          total: owners.filter((o) => o === who).length,
+        }
+      : { left: Math.max(0, state.maxRows - state.boards[who].rows.length), total: state.maxRows };
+  const yourAmmo = ammo('you');
+  const rivalAmmo = ammo('ai');
+
   const stars = level && state.outcome ? starsFor(level, state.outcome.winner === 'you', state.boards.you.solvedRow) : 0;
   const hasNextLevel = level && stars > 0 && level.id < LEVEL_COUNT;
   const tableColor = state.suddenDeath && !state.outcome ? mix(c.felt, c.dusk, 0.35) : c.felt;
@@ -210,7 +244,7 @@ function StandoffView({ initial, onNext, onLevel }: ViewProps) {
       <StatusBar style="light" />
       {/* Walnut rail: navigation and the rival's seat. */}
       <View style={styles.topBar}>
-        <Pressable onPress={() => router.back()} hitSlop={12} style={styles.back} accessibilityRole="button" accessibilityLabel="Back">
+        <Pressable onPress={() => leave()} hitSlop={12} style={styles.back} accessibilityRole="button" accessibilityLabel="Back">
           <MaterialCommunityIcons name="chevron-left" size={26} color={c.walnutInk} />
         </Pressable>
         <Text style={[styles.title, { color: c.walnutInk }]} numberOfLines={1}>
@@ -242,8 +276,10 @@ function StandoffView({ initial, onNext, onLevel }: ViewProps) {
                 </View>
               )}
             </View>
+            <AmmoBelt left={rivalAmmo.left} total={rivalAmmo.total} size={18} />
             <TauntBubble text={g.taunt?.text ?? null} id={g.taunt?.id ?? null} />
           </View>
+          {g.shared && <Gunfire shotKey={rivalShot} flip width={50} />}
           {!g.shared && (
             <RivalBoard
               rows={g.rivalRows}
@@ -257,7 +293,8 @@ function StandoffView({ initial, onNext, onLevel }: ViewProps) {
       )}
 
       {/* The felt. */}
-      <View style={[styles.table, { backgroundColor: tableColor, borderColor: c.feltDeep }]}>
+      <Animated.View style={[styles.table, { backgroundColor: tableColor, borderColor: c.feltDeep }, tableShake]}>
+        {state.suddenDeath && !state.outcome && <TumbleweedRoll trackWidth={width} />}
         {state.suddenDeath && !state.outcome && (
           <View style={[styles.suddenDeath, { backgroundColor: c.danger }]}>
             <Text style={[styles.suddenDeathText, { color: c.card }]}>SUDDEN DEATH · ONE SHOT EACH</Text>
@@ -268,6 +305,8 @@ function StandoffView({ initial, onNext, onLevel }: ViewProps) {
           <ScrollView contentContainerStyle={styles.resultScroll}>
             <ResultPanel
               state={state}
+              rivalId={g.profile.id}
+              rivalFullName={g.profile.name}
               rivalName={rivalName}
               rivalInitial={rivalInitial}
               unlocked={unlocked}
@@ -308,7 +347,7 @@ function StandoffView({ initial, onNext, onLevel }: ViewProps) {
                     label="Done"
                     onPress={() => {
                       if (mode === 'quick') useProfile.getState().abandonMatch();
-                      router.back();
+                      leave();
                     }}
                   />
                 )}
@@ -360,13 +399,17 @@ function StandoffView({ initial, onNext, onLevel }: ViewProps) {
               )}
               <CountdownOverlay beat={g.beat} />
             </View>
+            <DrawFlash fire={drawCount} />
 
             {/* Your seat: what's happening, and your scout chips. */}
             <View style={styles.yourSeat}>
-              <View style={[styles.youDot, { backgroundColor: c.you, borderColor: c.feltInk }]} />
-              <Text style={[styles.status, { color: statusColor }]} numberOfLines={2}>
-                {status}
-              </Text>
+              <Gunfire shotKey={youShot} width={50} />
+              <View style={{ flex: 1, gap: 4 }}>
+                <Text style={[styles.status, { color: statusColor }]} numberOfLines={1}>
+                  {status}
+                </Text>
+                <AmmoBelt left={yourAmmo.left} total={yourAmmo.total} size={22} />
+              </View>
               {(state.config.scouts ?? 0) > 0 && (
                 <Pressable
                   accessibilityRole="button"
@@ -394,7 +437,7 @@ function StandoffView({ initial, onNext, onLevel }: ViewProps) {
             </View>
           </>
         )}
-      </View>
+      </Animated.View>
 
       {!over && (
         <SafeAreaView edges={['bottom']} style={{ backgroundColor: c.walnut }}>
@@ -408,6 +451,8 @@ function StandoffView({ initial, onNext, onLevel }: ViewProps) {
 
 interface ResultProps {
   state: DuelState;
+  rivalId: OpponentId;
+  rivalFullName: string;
   rivalName: string;
   rivalInitial: string;
   unlocked: string[];
@@ -416,15 +461,31 @@ interface ResultProps {
 }
 
 /** End of a duel, written on a cream card laid on the felt. */
-function ResultPanel({ state, rivalName, rivalInitial, unlocked, stars, matchLine }: ResultProps) {
+function ResultPanel({ state, rivalId, rivalFullName, rivalName, rivalInitial, unlocked, stars, matchLine }: ResultProps) {
   const { c } = useTheme();
   const outcome = state.outcome!;
   const won = outcome.winner === 'you';
+  const lost = outcome.winner === 'ai';
+  // The poster shows whoever came off worse; the stamp is the verdict, in the winner's ink.
+  const stamp = won
+    ? outcome.reason === 'photo-finish'
+      ? 'BY A HAIR'
+      : 'CAUGHT'
+    : lost
+      ? outcome.reason === 'forfeit'
+        ? 'RAN OFF'
+        : 'SHOT DOWN'
+      : 'ESCAPED';
   return (
+    <PosterIn>
     <View style={[styles.result, { backgroundColor: c.card, borderColor: c.cardEdge }]}>
-      <Text style={[styles.headline, { color: won ? c.you : outcome.winner === 'ai' ? c.rival : c.cardInk }]}>
-        {outcomeHeadline(outcome)}
-      </Text>
+      <Text style={[styles.wanted, { color: c.cardInk }]}>WANTED</Text>
+      <View style={styles.posterFrame}>
+        <PosterPortrait who={lost ? 'you' : rivalId} size={132} />
+        <Stamp text={stamp} color={won ? c.you : lost ? c.rival : c.cardInk} />
+      </View>
+      <Text style={[styles.posterName, { color: c.cardInk }]}>{lost ? 'The Stranger' : rivalFullName}</Text>
+      <Text style={[styles.headline, { color: won ? c.you : lost ? c.rival : c.cardInk }]}>{outcomeHeadline(outcome)}</Text>
       {stars !== null && (
         <View style={styles.stars} accessibilityLabel={`${stars} of 3 stars`}>
           {[0, 1, 2].map((i) => (
@@ -483,6 +544,7 @@ function ResultPanel({ state, rivalName, rivalInitial, unlocked, stars, matchLin
       ))}
       {matchLine && <Text style={[styles.note, { color: c.inkSoft }]}>{matchLine}</Text>}
     </View>
+    </PosterIn>
   );
 }
 
@@ -510,8 +572,7 @@ const styles = StyleSheet.create({
   suddenDeath: { alignSelf: 'center', marginTop: space.sm, borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 4 },
   suddenDeathText: { fontFamily: fonts.slab, fontSize: 13, letterSpacing: 1.5 },
   boardArea: { flex: 1, justifyContent: 'center', paddingVertical: space.md },
-  yourSeat: { flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingHorizontal: space.base, paddingBottom: space.sm, minHeight: 52 },
-  youDot: { width: 14, height: 14, borderRadius: 7, borderWidth: 2 },
+  yourSeat: { flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingHorizontal: space.md, paddingBottom: space.sm, minHeight: 60 },
   status: { flex: 1, fontSize: 15, fontWeight: '600' },
   scout: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44, paddingLeft: 8 },
   chipStack: { flexDirection: 'row' },
@@ -519,7 +580,10 @@ const styles = StyleSheet.create({
   scoutLabel: { fontFamily: fonts.slab, fontSize: 16 },
   resultScroll: { padding: space.base, gap: space.sm },
   result: { borderWidth: 1.5, borderRadius: radius.panel, padding: space.base, gap: space.sm, alignItems: 'center' },
-  headline: { fontFamily: fonts.display, fontSize: 30, textAlign: 'center' },
+  headline: { fontFamily: fonts.slab, fontSize: 24, textAlign: 'center' },
+  wanted: { fontFamily: fonts.display, fontSize: 40, letterSpacing: 4, marginTop: -4 },
+  posterFrame: { alignItems: 'center', justifyContent: 'center' },
+  posterName: { fontFamily: fonts.slab, fontSize: 18, letterSpacing: 1, textTransform: 'uppercase' },
   stars: { flexDirection: 'row', gap: 6 },
   word: { fontSize: 17, textAlign: 'center' },
   miniTable: { alignSelf: 'stretch', borderRadius: radius.card, padding: space.md, alignItems: 'center', marginVertical: space.xs },
