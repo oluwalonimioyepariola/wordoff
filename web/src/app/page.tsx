@@ -6,9 +6,9 @@ import rivalAiming from "@/assets/screens/04-rival-aiming.png";
 import trailMap from "@/assets/screens/05-trail-map.png";
 import trophyRoom from "@/assets/screens/06-trophy-room.png";
 import ledger from "@/assets/screens/07-ledger.png";
-import settings from "@/assets/screens/08-settings.png";
 import houseRules from "@/assets/screens/09-house-rules.png";
 import logo from "@/assets/logo.svg";
+import { CardTitle } from "@/components/CardTitle";
 import { Reveal } from "@/components/Reveal";
 import { Sundown } from "@/components/Sundown";
 import { FeltRow, Ornament, Phone, Star } from "@/components/Table";
@@ -36,7 +36,7 @@ const RIVALS = [
     alias: "The Greenhorn",
     level: 1,
     blurb: "Keeps her greens and skips the grays, but can’t work out where the yellows go. Your first ten levels, with four-letter words.",
-    tilt: "-rotate-2",
+    tilt: "lg:-rotate-2",
     size: "lg:pt-10",
   },
   {
@@ -44,7 +44,7 @@ const RIVALS = [
     alias: "The Gunslinger",
     level: 2,
     blurb: "Steady hands, sharp eyes. Reads every clue more often than not and trusts his gut over the maths.",
-    tilt: "rotate-1",
+    tilt: "lg:rotate-1",
     size: "lg:pt-6",
   },
   {
@@ -52,7 +52,7 @@ const RIVALS = [
     alias: "Law of the Land",
     level: 3,
     blurb: "Calculates every possibility and picks the guess that narrows the field the most. Fast, cold, and almost never wrong.",
-    tilt: "-rotate-[0.8deg]",
+    tilt: "lg:-rotate-[0.8deg]",
     size: "lg:pt-2",
   },
 ];
@@ -60,12 +60,12 @@ const RIVALS = [
 const SCREENS = [
   { src: mainStreet, title: "Main Street", note: "today’s Daily Standoff" },
   { src: duelTable, title: "The table", note: "take turns, read every card" },
+  { src: rivalAiming, title: "Rival’s turn", note: "her cards dealt face down" },
   { src: wantedPoster, title: "The verdict", note: "stamped and shareable" },
   { src: trailMap, title: "The Trail", note: "30 levels, three chapters" },
   { src: trophyRoom, title: "Trophy Room", note: "22 badges to earn" },
   { src: ledger, title: "The Ledger", note: "every standoff on record" },
   { src: houseRules, title: "House Rules", note: "learn it in a minute" },
-  { src: settings, title: "Rules of the House", note: "shot clock, hard mode, more" },
 ];
 
 const FEATURES = [
@@ -105,47 +105,47 @@ export default function Home() {
       </header>
 
       <main id="top">
-        {/* ---------- hero: main street at sundown ---------- */}
-        <section className="relative overflow-hidden bg-[#1e0f08]">
+        {/* ---------- hero: the standoff ---------- */}
+        <section className="relative flex min-h-[100svh] flex-col overflow-hidden bg-[#140904]">
           <Sundown />
-          <div className="relative z-10 mx-auto grid w-[min(1160px,100%-32px)] items-center gap-12 pb-28 pt-32 md:grid-cols-[1.15fr_0.85fr] md:pb-36 md:pt-40">
-            <div>
-              <h1 className="font-display text-[clamp(64px,10vw,124px)] leading-[0.92] tracking-wide text-[#f8e8c8] [text-shadow:0_4px_20px_rgba(0,0,0,0.45)]">
-                WORDOFF
-              </h1>
-              <p className="mt-4 font-slab text-[15px] font-semibold uppercase tracking-[0.3em] text-[#e9c48c]">One word · Two guns · High noon</p>
-              <p className="mt-6 max-w-[30ch] text-xl text-[#fbecd0] [text-shadow:0_1px_8px_rgba(0,0,0,0.4)]">
-                A word game played as a duel. You and your rival chase the same secret word across one saloon table, and whoever lands it first wins.
-              </p>
-              <div className="mt-8 flex flex-wrap items-center gap-6">
-                <a href={APK} className="seal text-lg" download>
-                  <span>
-                    <AndroidMark />
-                    DOWNLOAD FOR ANDROID
-                  </span>
-                </a>
-                <a href={REPO} className="font-slab text-lg font-semibold text-[#f0d9ae] underline decoration-brass/60 underline-offset-4 hover:text-brass-hi">
-                  Read the code on GitHub
-                </a>
-              </div>
-              <dl className="mt-10 flex flex-wrap gap-x-7 gap-y-2 font-slab text-[15px] font-semibold text-[#e9d7b6]">
-                {[
-                  ["3", "rivals"],
-                  ["30", "levels"],
-                  ["1", "Daily Standoff"],
-                  ["0", "accounts, fully offline"],
-                ].map(([n, label]) => (
-                  <div key={label} className="flex gap-1.5">
-                    <dt className="text-brass-hi">{n}</dt>
-                    <dd>{label}</dd>
-                  </div>
-                ))}
-              </dl>
+          <div className="relative z-10 mx-auto flex w-[min(1160px,100%-32px)] flex-col items-center pt-28 text-center sm:pt-36">
+            <p className="font-slab text-[12px] font-semibold uppercase tracking-[0.22em] text-[#e9c48c] sm:text-sm sm:tracking-[0.34em]">
+              One word · Two guns · High noon
+            </p>
+            <div className="mt-6 sm:mt-8">
+              <CardTitle />
             </div>
-            <div className="mx-auto w-[260px] animate-float md:w-[330px]">
-              <Phone src={rivalAiming} alt="A Wordoff duel: Rookie Rae aiming, her first card dealt face down after your shot" priority />
+            <p className="mt-8 max-w-[34ch] text-lg leading-relaxed text-[#fbecd0] [text-shadow:0_1px_10px_rgba(0,0,0,0.5)] sm:text-xl">
+              A word game played as a duel. You and your rival chase the same secret word across one saloon table. Whoever lands it first wins.
+            </p>
+            <div className="mt-9 flex flex-col items-center gap-4 sm:flex-row sm:gap-7">
+              <a href={APK} className="seal text-base sm:text-lg" download>
+                <span className="whitespace-nowrap">
+                  <AndroidMark />
+                  <span className="sm:hidden">GET THE APK</span>
+                  <span className="hidden sm:inline">DOWNLOAD FOR ANDROID</span>
+                </span>
+              </a>
+              <a href="#how" className="font-slab text-lg font-semibold text-[#f0d9ae] underline decoration-brass/60 underline-offset-4 hover:text-brass-hi">
+                See how it plays
+              </a>
             </div>
           </div>
+          {/* the street gets the bottom of the screen */}
+          <div className="min-h-[30svh] flex-1" />
+          <dl className="relative z-10 mx-auto mb-8 flex w-[min(1160px,100%-32px)] flex-wrap justify-center gap-x-8 gap-y-2 font-slab text-[15px] font-semibold text-[#f3dfbd] [text-shadow:0_1px_6px_rgba(0,0,0,0.6)]">
+            {[
+              ["3", "rivals"],
+              ["30", "levels"],
+              ["1", "Daily Standoff"],
+              ["0", "accounts needed"],
+            ].map(([n, label]) => (
+              <div key={label} className="flex gap-1.5">
+                <dt className="text-brass-hi">{n}</dt>
+                <dd>{label}</dd>
+              </div>
+            ))}
+          </dl>
         </section>
 
         {/* ---------- house rules ---------- */}
@@ -204,11 +204,11 @@ export default function Home() {
               <h2 className="text-center font-display text-[clamp(34px,5vw,52px)] text-[#f8e8c8]">Three rivals in town</h2>
               <p className="mx-auto mt-2 text-center font-slab text-xl italic text-cream-soft">They play fair: each only ever learns from the cards on the table.</p>
             </Reveal>
-            <div className="mt-14 grid items-end gap-8 lg:grid-cols-[0.92fr_1fr_1.1fr]">
+            <div className="mt-14 grid grid-cols-[minmax(0,1fr)] items-end gap-8 lg:grid-cols-[0.92fr_1fr_1.1fr]">
               {RIVALS.map((r, i) => (
                 <Reveal key={r.name} delay={i * 140} className={r.size}>
-                  <article className={`paper px-7 pb-8 pt-9 text-center ${r.tilt}`}>
-                    <div className={`font-display leading-none tracking-[0.12em] ${i === 2 ? "text-[46px]" : "text-[38px]"}`}>WANTED</div>
+                  <article className={`paper px-5 pb-8 pt-9 sm:px-7 text-center ${r.tilt}`}>
+                    <div className={`font-display leading-none tracking-[0.12em] ${i === 2 ? "text-[clamp(32px,11vw,46px)]" : "text-[clamp(28px,9.5vw,38px)]"}`}>WANTED</div>
                     <p className="mt-4 font-slab text-2xl font-bold uppercase tracking-[0.12em]">{r.name}</p>
                     <p className="font-slab italic text-ink-soft">alias “{r.alias}”</p>
                     <div className="mt-3 flex justify-center gap-1" aria-label={`Difficulty ${r.level} of 3`}>
@@ -269,39 +269,24 @@ export default function Home() {
 
         {/* ---------- play it ---------- */}
         <section id="play" className="pb-28 pt-10">
-          <div className="mx-auto grid w-[min(1160px,100%-32px)] items-center gap-12 md:grid-cols-2">
-            <Reveal>
-              <h2 className="font-display text-[clamp(32px,4.6vw,48px)] text-[#f8e8c8]">Play it today</h2>
-              <p className="mt-4 max-w-[48ch] text-[#e9d7b6]">
-                On Android, download the APK and open it. Your phone will ask you to allow installs from your browser the first time. Not in the app stores yet; on iPhone, run it with the free Expo Go app.
-              </p>
-              <div className="mt-8 flex flex-wrap items-center gap-5">
-                <a href={APK} className="seal text-[17px]" download>
-                  <span>
-                    <AndroidMark />
-                    GET THE APK
-                  </span>
-                </a>
-                <a href={RELEASES} className="font-slab text-lg font-semibold text-[#f0d9ae] underline decoration-brass/60 underline-offset-4 hover:text-brass-hi">
-                  All releases
-                </a>
-              </div>
-            </Reveal>
-            <Reveal delay={120}>
-              <pre className="overflow-x-auto rounded-xl border border-[#4d3220] bg-[#1a0f08] p-6 font-mono text-[15px] leading-7 text-[#f0d9ae]">
-                <span className="text-[#8a7562]"># clone and install</span>
-                {"\n"}git clone {REPO}
-                {"\n"}cd wordoff
-                {"\n"}npm install
-                {"\n\n"}
-                <span className="text-[#8a7562]"># start, then scan the QR code with Expo Go</span>
-                {"\n"}npm start
-                {"\n\n"}
-                <span className="text-[#8a7562]"># or open the iOS Simulator</span>
-                {"\n"}npm run ios
-              </pre>
-            </Reveal>
-          </div>
+          <Reveal className="mx-auto flex w-[min(720px,100%-32px)] flex-col items-center text-center">
+            <Image src={logo} alt="" className="size-20 sm:size-24" />
+            <h2 className="mt-6 font-display text-[clamp(32px,6vw,52px)] leading-tight text-[#f8e8c8]">Play it today</h2>
+            <p className="mt-4 max-w-[44ch] text-[#e9d7b6]">
+              Download the APK on your Android phone and open it. The first time, your phone asks you to allow installs from your browser. Not in the app stores yet.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-4">
+              <a href={APK} className="seal text-[17px]" download>
+                <span>
+                  <AndroidMark />
+                  GET THE APK
+                </span>
+              </a>
+              <a href={RELEASES} className="font-slab text-lg font-semibold text-[#f0d9ae] underline decoration-brass/60 underline-offset-4 hover:text-brass-hi">
+                All releases
+              </a>
+            </div>
+          </Reveal>
         </section>
       </main>
 
