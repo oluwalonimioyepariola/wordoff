@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <a href="https://oluwalonimioyepariola.github.io/wordoff/"><b>Landing page</b></a> ·
+  <a href="https://wordoff.oluwalonimioyepariola.com/"><b>Landing page</b></a> ·
   <a href="#play-it">Play it</a> ·
   <a href="#screens">Screens</a> ·
   <a href="DESIGN.md">Design system</a>
