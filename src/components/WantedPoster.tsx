@@ -21,7 +21,7 @@ interface Props {
 }
 
 /** Aged paper: darkened edges, a torn top corner, a faint ring where a cup sat. */
-function PaperWear({ width, height }: { width: number; height: number }) {
+export function PaperWear({ width, height }: { width: number; height: number }) {
   return (
     <Svg pointerEvents="none" width={width} height={height} style={StyleSheet.absoluteFill}>
       <Defs>
