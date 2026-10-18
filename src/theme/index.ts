@@ -22,6 +22,9 @@ const light = {
   feltInkSoft: '#c9b18c',
   walnut: '#2e1d13',
   walnutInk: '#efe3cb',
+  // The plank wall on Main Street.
+  plank: '#6b4a33',
+  plankSeam: '#4a2f1e',
   // Cards (tiles and keys).
   card: '#f6ead2',
   cardEdge: '#cdb48a',
@@ -60,6 +63,8 @@ const dark: Palette = {
   felt: '#3f2818',
   feltDeep: '#2f1d11',
   walnut: '#140d08',
+  plank: '#3a2618',
+  plankSeam: '#22160d',
   card: '#eadbbd',
   cardEdge: '#a68b62',
   you: '#4f6fa6',
