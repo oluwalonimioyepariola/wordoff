@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { PAPER_INK, PAPER_INK_SOFT, PAPER_RULE, PaperSheet, PlankScreen } from '../../components/PaperPage';
 import { Icon, type IconName } from '../../components/ui';
 import type { BoardStyle } from '../../engine';
-import { ShotClock, ThemePref, useSettings } from '../../store/settings';
+import { ShotClock, useSettings } from '../../store/settings';
 import { fonts, space, useTheme } from '../../theme';
 
 /** A ruled heading on the notice. */
@@ -101,18 +101,6 @@ export default function SettingsScreen() {
 
         <Heading>Looks</Heading>
         <Toggle icon="eye-outline" label="Colourblind cards" note="Orange and blue instead of green and gold." value={s.colorblind} onChange={(v) => s.set('colorblind', v)} />
-        <View style={styles.block}>
-          <Text style={styles.label}>Appearance</Text>
-          <Choice<ThemePref>
-            options={[
-              { label: 'System', value: 'system' },
-              { label: 'Light', value: 'light' },
-              { label: 'Dark', value: 'dark' },
-            ]}
-            value={s.theme}
-            onChange={(v) => s.set('theme', v)}
-          />
-        </View>
 
         <View style={styles.signoff}>
           <Icon name="star-four-points" size={12} color={PAPER_INK_SOFT} />
