@@ -224,6 +224,12 @@ Below, a dark plank wall (`plank`, `plankSeam`, `plankGrain`) holds today's Dail
 
 Wood type (Ultra) is reserved for WORDOFF, WANTED, the seal and the DRAW! stamp; everything else is Zilla Slab or the platform face.
 
+### The duel table
+The felt is lit from above: a warm pool of lamplight in the middle falling off to darker edges, a fine nap in the cloth, and a thin brass inlay just inside the rail. Empty card slots are wells pressed into the felt (dark, with light catching the lower lip). Rows open with notched poker chips in the seat colour. Keys are ivory blocks with a darker lower lip that press down 3pt; FIRE is an engraved brass seal. Walnut rails carry a faint grain.
+
+### House Rules (how to duel)
+A single aged handbill on the plank wall: HOUSE RULES in wood type, five rules marked with oxblood roman numerals and divided by ornament rules, each illustrated with real pieces from the table (felt rows, chips, cards, revolver, scout chip, streak medallion), closed by a SADDLE UP seal.
+
 ### Trophy Wall (awards)
 Every award is a badge hung on a walnut board with a brass nameplate, three across. Frames carry meaning: lawman's stars for duel skills, ribboned medals (navy and oxblood stripes) for streaks and milestones, belt buckles for the trail. Earned badges are polished brass with an emblem on a cream plate (secret ones on oxblood enamel); locked ones are dark blanks with a padlock or question mark. Tapping a badge opens it large in a form sheet.
 
