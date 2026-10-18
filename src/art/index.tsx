@@ -270,10 +270,10 @@ export function PosterPortrait({ who, size = 120 }: { who: Who; size?: number })
 
 /* ---------- The scene ---------- */
 
-/** One duelist silhouette, feet at (0,0), facing right, gun drawn. */
-function Duelist({ x, color, flip }: { x: number; color: string; flip?: boolean }) {
+/** One duelist silhouette, feet at (x, y), facing right, gun drawn. */
+function Duelist({ x, y = 128, s = 1, color, flip }: { x: number; y?: number; s?: number; color: string; flip?: boolean }) {
   return (
-    <G transform={`translate(${x} 128) ${flip ? 'scale(-1 1)' : ''}`}>
+    <G transform={`translate(${x} ${y}) scale(${flip ? -s : s} ${s})`}>
       <Ellipse cx={-14} cy={1} rx={22} ry={2.5} fill="#000" opacity={0.25} />
       <Path d="M-6 -68 Q0 -76 6 -68 L7 -64 L-7 -64 Z" fill={color} />
       <Ellipse cx={0} cy={-64} rx={13} ry={2.4} fill={color} />
@@ -315,6 +315,77 @@ export function StandoffScene({ width = 360, youColor = '#24344f', rivalColor = 
       <Duelist x={268} color={rivalColor} flip />
       <G transform="translate(170 116)">
         <Tumbleweed size={20} />
+      </G>
+    </Svg>
+  );
+}
+
+/**
+ * Main street at sundown: the saloon's false front on the left, the sun going
+ * down over the mesas, and two duelists squared off in the street. Drawn tall
+ * so the wordmark can sit in the sky.
+ */
+export function MainStreetScene({
+  width = 390,
+  height,
+  youColor = '#24344f',
+  rivalColor = '#9e2b25',
+}: {
+  width?: number;
+  height: number;
+  youColor?: string;
+  rivalColor?: string;
+}) {
+  // Draw in a 390-wide space; the extra height goes to sky.
+  const vh = (390 * height) / width;
+  const ground = vh - 70;
+  return (
+    <Svg width={width} height={height} viewBox={`0 0 390 ${vh}`} preserveAspectRatio="xMidYMax slice">
+      <Defs>
+        <LinearGradient id="dusk" x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0" stopColor="#8f5a1c" />
+          <Stop offset="0.55" stopColor="#d49a3a" />
+          <Stop offset="1" stopColor="#f2d29a" />
+        </LinearGradient>
+      </Defs>
+      <Rect x={0} y={0} width={390} height={vh} fill="url(#dusk)" />
+      {/* the sun, low */}
+      <Circle cx={278} cy={ground - 28} r={54} fill="#f6e2b4" opacity={0.95} />
+      <Circle cx={278} cy={ground - 28} r={70} fill="#f6e2b4" opacity={0.18} />
+      {/* mesas */}
+      <Path
+        d={`M0 ${ground - 22} L60 ${ground - 22} L70 ${ground - 44} L118 ${ground - 44} L128 ${ground - 22} L210 ${ground - 22} L222 ${ground - 52} L300 ${ground - 52} L312 ${ground - 22} L390 ${ground - 22} L390 ${ground} L0 ${ground} Z`}
+        fill="#9a6a44"
+      />
+      {/* the saloon: false front, sign board, lit windows, swinging doors, porch */}
+      <G transform={`translate(0 ${ground - 120}) scale(0.8)`}>
+        <Path d="M0 30 L0 18 L34 18 L34 8 L106 8 L106 18 L140 18 L140 30 L140 150 L0 150 Z" fill="#5a3a24" />
+        <Rect x={18} y={24} width={104} height={22} rx={2} fill="#2e1d13" />
+        <Rect x={22} y={28} width={96} height={14} rx={1} fill="#b8862b" />
+        <Rect x={30} y={33} width={80} height={4} rx={2} fill="#2e1d13" opacity={0.55} />
+        <Rect x={14} y={60} width={30} height={34} fill="#2e1d13" />
+        <Rect x={17} y={63} width={24} height={28} fill="#f0b858" />
+        <Line x1={29} y1={63} x2={29} y2={91} stroke="#2e1d13" strokeWidth={2} />
+        <Rect x={96} y={60} width={30} height={34} fill="#2e1d13" />
+        <Rect x={99} y={63} width={24} height={28} fill="#f0b858" />
+        <Line x1={111} y1={63} x2={111} y2={91} stroke="#2e1d13" strokeWidth={2} />
+        <Rect x={-2} y={102} width={146} height={6} fill="#2e1d13" />
+        <Rect x={4} y={108} width={4} height={42} fill="#2e1d13" />
+        <Rect x={132} y={108} width={4} height={42} fill="#2e1d13" />
+        <Rect x={52} y={112} width={36} height={38} fill="#2e1d13" />
+        <Rect x={54} y={120} width={15} height={20} fill="#9a6a44" />
+        <Rect x={71} y={120} width={15} height={20} fill="#9a6a44" />
+      </G>
+      {/* the street */}
+      <Rect x={0} y={ground} width={390} height={70} fill="#6b4a33" />
+      <Path d={`M0 ${ground} L390 ${ground}`} stroke="#4a2f1e" strokeWidth={2} />
+      <G transform={`translate(352 ${ground - 46})`}>
+        <Cactus height={50} color="#3f5525" />
+      </G>
+      <Duelist x={182} y={ground + 44} s={0.92} color={youColor} />
+      <Duelist x={326} y={ground + 44} s={0.92} color={rivalColor} flip />
+      <G transform={`translate(240 ${ground + 30})`}>
+        <Tumbleweed size={18} />
       </G>
     </Svg>
   );
