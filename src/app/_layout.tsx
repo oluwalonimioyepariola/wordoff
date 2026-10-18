@@ -34,6 +34,10 @@ export default function RootLayout() {
         >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="history" options={{ title: 'History' }} />
+          <Stack.Screen
+            name="award/[id]"
+            options={{ presentation: 'formSheet', sheetAllowedDetents: [0.55], sheetGrabberVisible: true, headerShown: false }}
+          />
           <Stack.Screen name="duel" options={{ headerShown: false, gestureEnabled: false }} />
           <Stack.Screen name="how-to-play" options={{ title: 'How to duel', presentation: 'modal' }} />
         </Stack>
