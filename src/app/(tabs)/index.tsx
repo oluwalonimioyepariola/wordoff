@@ -1,8 +1,9 @@
 import { Redirect, router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, Share, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { StandoffScene } from '../../art';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Avatar, Button, Card, Felt, H, Icon, LinkRow, P, Pips, Segmented } from '../components/ui';
+import { Avatar, Button, Card, Felt, H, Icon, P, Pips, Segmented } from '../../components/ui';
 import {
   BestOf,
   buildShareText,
@@ -19,10 +20,10 @@ import {
   OpponentId,
   streakStatus,
   totalStars,
-} from '../engine';
-import { useProfile } from '../store/profile';
-import { useSettings } from '../store/settings';
-import { fonts, radius, space, useTheme } from '../theme';
+} from '../../engine';
+import { useProfile } from '../../store/profile';
+import { useSettings } from '../../store/settings';
+import { fonts, radius, space, useTheme } from '../../theme';
 
 const STREAK_COPY = {
   active: 'Today’s standoff is done. See you tomorrow.',
@@ -33,6 +34,7 @@ const STREAK_COPY = {
 
 export default function Home() {
   const { c } = useTheme();
+  const { width } = useWindowDimensions();
   const settings = useSettings();
   const { stats, activeDaily, match: savedMatch, startMatch, abandonMatch } = useProfile();
   // A finished match the player backed out of shouldn't block a new one.
@@ -56,12 +58,23 @@ export default function Home() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.canvas }}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView contentContainerStyle={styles.scroll} contentInsetAdjustmentBehavior="automatic">
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
             <H size="display">WORDOFF</H>
             <P soft>One word, one table, two shooters.</P>
           </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="How to duel"
+            hitSlop={10}
+            onPress={() => router.push('/how-to-play')}
+            style={styles.help}
+          >
+            <Icon name="help-circle-outline" size={26} color={c.inkSoft} />
+          </Pressable>
+        </View>
+        <View style={styles.tallyRow}>
           <View style={styles.tally} accessibilityLabel={`${streak.streak} day streak, ${stats.daily.freezes} streak freezes`}>
             <View style={styles.tallyItem}>
               <Icon name="fire" size={22} color={c.rival} />
@@ -72,10 +85,14 @@ export default function Home() {
               <Text style={[styles.tallyNum, { color: c.ink }]}>{stats.daily.freezes}</Text>
             </View>
           </View>
+          <Text style={{ color: c.inkSoft, flex: 1, fontSize: 15 }}>
+            {STREAK_COPY[streak.status]} Best {stats.daily.bestPlayStreak}.
+          </Text>
         </View>
-        <P soft>
-          {STREAK_COPY[streak.status]} Best streak {stats.daily.bestPlayStreak}.
-        </P>
+
+        <View style={[styles.scene, { borderColor: c.walnut }]} accessibilityLabel={`Main street at high noon: you facing ${todayRival.name}`}>
+          <StandoffScene width={width - space.base * 2 - 6} youColor={c.you} rivalColor={c.rival} />
+        </View>
 
         <Felt>
           <View style={styles.rowBetween}>
@@ -92,8 +109,8 @@ export default function Home() {
             </View>
           </View>
           <P color={c.feltInkSoft}>
-            Standoff rules: separate boards, both fire at once. Everyone faces the same word and the same{' '}
-            {todayRival.shortName} today.
+            Standoff rules: separate boards, both fire at once. Everyone faces the same word and the same rival
+            game today.
           </P>
           {record ? (
             <>
@@ -197,13 +214,6 @@ export default function Home() {
           )}
         </Card>
 
-        <Card style={{ paddingVertical: space.xs }}>
-          <LinkRow label="Stats" icon="chart-bar" onPress={() => router.push('/stats')} />
-          <LinkRow label="Achievements" icon="medal-outline" onPress={() => router.push('/achievements')} />
-          <LinkRow label="History" icon="calendar-month-outline" onPress={() => router.push('/history')} />
-          <LinkRow label="How to duel" icon="help-circle-outline" onPress={() => router.push('/how-to-play')} />
-          <LinkRow label="Settings" icon="cog-outline" onPress={() => router.push('/settings')} last />
-        </Card>
       </ScrollView>
     </SafeAreaView>
   );
@@ -213,6 +223,9 @@ const styles = StyleSheet.create({
   scroll: { padding: space.base, gap: space.md, paddingBottom: space.xxl },
   header: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginTop: space.sm },
   tally: { flexDirection: 'row', gap: space.md },
+  tallyRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  help: { minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
+  scene: { borderWidth: 3, borderRadius: radius.panel, overflow: 'hidden' },
   tallyItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   tallyNum: { fontFamily: fonts.slab, fontSize: 22 },
   rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
