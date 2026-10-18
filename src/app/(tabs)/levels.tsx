@@ -1,9 +1,9 @@
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Avatar, Card, H, Icon, P, Screen } from '../components/ui';
-import { getOpponent, LEVEL_COUNT, levelBlurb, LEVELS, totalStars } from '../engine';
-import { useProfile } from '../store/profile';
-import { fonts, radius, useTheme } from '../theme';
+import { Avatar, Card, H, Icon, P, Screen } from '../../components/ui';
+import { getOpponent, LEVEL_COUNT, levelBlurb, LEVELS, totalStars } from '../../engine';
+import { useProfile } from '../../store/profile';
+import { fonts, radius, useTheme } from '../../theme';
 
 export default function LevelsScreen() {
   const { c } = useTheme();
@@ -13,7 +13,7 @@ export default function LevelsScreen() {
   const next = LEVELS.find((l) => l.id === unlocked)!;
 
   return (
-    <Screen title="Levels">
+    <Screen title="Levels" tab>
       <Card>
         <View style={styles.rowBetween}>
           <H>
