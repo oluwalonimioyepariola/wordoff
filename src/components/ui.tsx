@@ -2,6 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Stack } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View, ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Portrait } from '../art';
 import { OpponentProfile } from '../engine';
 import { fonts, radius, space, useTheme } from '../theme';
 
@@ -12,17 +13,37 @@ export function Icon({ name, size = 20, color }: { name: IconName; size?: number
   return <MaterialCommunityIcons name={name} size={size} color={color ?? c.ink} />;
 }
 
-/** A paper screen: cream card stock with walnut ink. */
-export function Screen({ title, children, scroll = true }: { title?: string; children: React.ReactNode; scroll?: boolean }) {
+/**
+ * A paper screen: cream card stock with walnut ink. Tab screens (`tab`) have
+ * no navigation bar, so they set their own large title at the top.
+ */
+export function Screen({
+  title,
+  children,
+  scroll = true,
+  tab = false,
+}: {
+  title?: string;
+  children: React.ReactNode;
+  scroll?: boolean;
+  tab?: boolean;
+}) {
   const { c } = useTheme();
+  const heading = tab && title ? <Text style={[styles.largeTitle, { color: c.ink }]} accessibilityRole="header">{title}</Text> : null;
   const body = scroll ? (
-    <ScrollView contentContainerStyle={styles.scroll}>{children}</ScrollView>
+    <ScrollView contentContainerStyle={styles.scroll} contentInsetAdjustmentBehavior="automatic">
+      {heading}
+      {children}
+    </ScrollView>
   ) : (
-    <View style={{ flex: 1 }}>{children}</View>
+    <View style={{ flex: 1 }}>
+      {heading}
+      {children}
+    </View>
   );
   return (
-    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: c.canvas }}>
-      {title !== undefined && <Stack.Screen options={{ title }} />}
+    <SafeAreaView edges={tab ? ['top', 'left', 'right'] : ['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: c.canvas }}>
+      {!tab && title !== undefined && <Stack.Screen options={{ title }} />}
       {body}
     </SafeAreaView>
   );
@@ -169,23 +190,12 @@ export function LinkRow({ label, icon, onPress, last }: { label: string; icon: I
   );
 }
 
-/** Placeholder duelist portrait until real character art exists: an oxblood chip with a brass rim. */
+/** A rival's portrait in a brass-rimmed frame. */
 export function Avatar({ profile, size = 44 }: { profile: OpponentProfile; size?: number }) {
   const { c } = useTheme();
   return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        borderRadius: size / 2,
-        backgroundColor: c.rival,
-        borderWidth: 2,
-        borderColor: c.brass,
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <Text style={{ color: c.card, fontFamily: fonts.display, fontSize: size * 0.42 }}>{profile.name.replace('The ', '')[0]}</Text>
+    <View accessibilityLabel={`${profile.name} portrait`}>
+      <Portrait who={profile.id} size={size} ring={c.brass} />
     </View>
   );
 }
@@ -206,6 +216,7 @@ const styles = StyleSheet.create({
   card: { borderWidth: 1, borderRadius: radius.card, padding: space.base, gap: space.sm },
   felt: { borderWidth: 3, borderRadius: radius.panel, padding: space.base, gap: space.sm },
   display: { fontFamily: fonts.display, fontSize: 40, letterSpacing: 0.5 },
+  largeTitle: { fontFamily: fonts.slab, fontSize: 34, marginTop: space.sm },
   title: { fontFamily: fonts.slab, fontSize: 28 },
   heading: { fontFamily: fonts.slab, fontSize: 21 },
   body: { fontSize: 16, lineHeight: 23 },
