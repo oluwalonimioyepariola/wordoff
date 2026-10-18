@@ -107,8 +107,9 @@ export interface Theme {
 
 export function useTheme(): Theme {
   const system = useColorScheme();
-  const { theme, colorblind: cb, reducedMotion } = useSettings();
-  const isDark = theme === 'system' ? system === 'dark' : theme === 'dark';
+  const { colorblind: cb, reducedMotion } = useSettings();
+  // Always follow the phone's own light/dark setting.
+  const isDark = system === 'dark';
   const c: Palette = { ...(isDark ? dark : light), ...(cb ? colorblind : {}) };
   return {
     dark: isDark,
