@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Rect } from 'react-native-svg';
 import { PlayerId, Shot, SuddenDeathHint } from '../engine';
@@ -25,7 +26,7 @@ interface Props {
  * A seat chip: a real poker chip in the seat's colour, notched edge and inlaid
  * centre, marking who fires a row. Rows still to come show it ghosted.
  */
-export function SeatChip({ owner, label, size, active }: { owner: PlayerId; label: string; size: number; active: boolean }) {
+export const SeatChip = memo(function SeatChip({ owner, label, size, active }: { owner: PlayerId; label: string; size: number; active: boolean }) {
   const { c } = useTheme();
   const color = owner === 'you' ? c.you : c.rival;
   const notches = Array.from({ length: 8 }, (_, i) => (i * 360) / 8);
@@ -44,7 +45,7 @@ export function SeatChip({ owner, label, size, active }: { owner: PlayerId; labe
       </View>
     </View>
   );
-}
+});
 
 /**
  * The felt between two seats. Turns alternate; each row carries the chip of
