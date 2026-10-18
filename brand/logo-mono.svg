@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+
+      <mask id="m"><rect width="512" height="512" fill="#fff"/>
+    <g transform="translate(256 258) scale(0.92)">
+      <polygon points="-92,-48 -60,-48 -30,62 -62,62" fill="#000"/>
+      <polygon points="-56,62 -34,62 10,-22 -12,-22" fill="#000"/>
+      <polygon points="56,62 34,62 -10,-22 12,-22" fill="#000"/>
+      <polygon points="92,-48 60,-48 30,62 62,62" fill="#000"/>
+      <rect x="-106" y="-64" width="60" height="18" fill="#000"/>
+      <rect x="46" y="-64" width="60" height="18" fill="#000"/>
+    </g></mask>
+      <g mask="url(#m)">
+        <polygon points="256.00,50.00 316.00,152.08 434.40,153.00 376.00,256.00 434.40,359.00 316.00,359.92 256.00,462.00 196.00,359.92 77.60,359.00 136.00,256.00 77.60,153.00 196.00,152.08" fill="#fff"/>
+        <circle cx="256" cy="42" r="22" fill="#fff"/><circle cx="441.32943640986986" cy="149" r="22" fill="#fff"/><circle cx="441.3294364098699" cy="362.99999999999994" r="22" fill="#fff"/><circle cx="256" cy="470" r="22" fill="#fff"/><circle cx="70.67056359013017" cy="363.00000000000006" r="22" fill="#fff"/><circle cx="70.67056359013006" cy="149.0000000000001" r="22" fill="#fff"/>
+      </g></svg>
