@@ -35,6 +35,15 @@
   85% { opacity: 0.75; }
   to { transform: translateX(320px); opacity: 0; }
 }
+/* The title row: each card is dealt, then turns face up, left to right. */
+@keyframes deal {
+  from { transform: translateY(-36px) rotate(-8deg); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes turn {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(180deg); }
+}
 @keyframes float {
   0%, 100% { transform: translateY(0) rotate(3deg); }
   50% { transform: translateY(-10px) rotate(2.4deg); }
@@ -54,6 +63,8 @@
 }
 
 @layer components {
+  .card-flip { animation: deal 520ms cubic-bezier(0.23, 1, 0.32, 1) both; animation-delay: calc(var(--i) * 90ms + 150ms); }
+  .card-inner { transform: rotateY(180deg); animation: turn 560ms cubic-bezier(0.77, 0, 0.175, 1) both; animation-delay: calc(var(--i) * 140ms + 900ms); }
   /* Aged paper: darkened edges, like a handbill that's hung outside a while. */
   .paper {
     background-color: var(--color-paper);
@@ -102,6 +113,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .card-flip, .card-inner { animation: none !important; }
   .reveal, .js .reveal:not(.is-in) { opacity: 1 !important; transform: none !important; transition: none; }
   .animate-drift, .animate-float { animation: none !important; }
 }
