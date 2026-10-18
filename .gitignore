@@ -40,9 +40,6 @@ yarn-error.*
 /ios
 /android
 
-# impeccable working files
-.impeccable/questions/
-.impeccable/review/
 
 # EAS / native build output
 *.apk
