@@ -39,7 +39,7 @@ export default function RootLayout() {
             options={{ presentation: 'formSheet', sheetAllowedDetents: [0.55], sheetGrabberVisible: true, headerShown: false }}
           />
           <Stack.Screen name="duel" options={{ headerShown: false, gestureEnabled: false }} />
-          <Stack.Screen name="how-to-play" options={{ title: 'How to duel', presentation: 'modal' }} />
+          <Stack.Screen name="how-to-play" options={{ title: 'House rules', presentation: 'modal', headerShown: false }} />
         </Stack>
       )}
     </SafeAreaProvider>
