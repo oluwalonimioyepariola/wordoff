@@ -230,6 +230,14 @@ The felt is lit from above: a warm pool of lamplight in the middle falling off t
 ### House Rules (how to duel)
 A single aged handbill on the plank wall: HOUSE RULES in wood type, five rules marked with oxblood roman numerals and divided by ornament rules, each illustrated with real pieces from the table (felt rows, chips, cards, revolver, scout chip, streak medallion), closed by a SADDLE UP seal.
 
+### The Trail (levels)
+A hand-drawn map pinned to the plank wall: aged parchment, MAP OF THE TERRITORY in wood type, a compass rose. Each chapter opens with a ruled banner (rival portrait, word length and tier); its ten stops wind down a dotted trail. Stops are discs: finished ones cream with ink rims, the current one brass and glowing, locked ones faded with a padlock, bosses with a heavier oxblood rim and a skull. Each stop's name and stars sit beside it, on the side away from the trail.
+
+### The Ledger (stats)
+A bookkeeper's page on the plank wall: a red margin rule, RECORD OF STANDOFFS in wood type, three headline figures (duels, won, day streak) split by rules, then ruled sections (The Daily, Feats, shots to the word as ink bars, a bounty record with rival portraits and navy wins / oxblood losses) and a link to turn to the daily history.
+
+Dark screens keep a light status bar and a plank-coloured fade under it, so the clock never sits on paper.
+
 ### Trophy Room (awards)
 A lamplit walnut room (status bar text light, a walnut fade under it on scroll). The header gives the count and a brass rail with rivets at each quarter. The latest badge gets its own spotlit panel with its name in wood type; every other badge sits three to a shelf (lit front edge, shadow below) with a warm glow behind earned ones and an engraved brass nameplate held by two screws. Locked badges are dark blanks on dark plates. Tapping opens the badge large under a spotlight, with an EARNED nameplate.
 
