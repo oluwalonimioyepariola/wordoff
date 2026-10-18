@@ -61,7 +61,7 @@ export default function TrophyWall() {
                   accessibilityRole="button"
                   accessibilityLabel={`${hidden ? 'Secret badge' : a.name}, ${at ? 'earned' : 'locked'}`}
                   onPress={() => router.push({ pathname: '/award/[id]', params: { id: a.id } })}
-                  style={({ pressed }) => [styles.cell, { width: cell, transform: [{ scale: pressed ? 0.96 : 1 }] }]}
+                  style={({ pressed }) => [styles.cell, { transform: [{ scale: pressed ? 0.96 : 1 }] }]}
                 >
                   <Badge id={a.id} earned={!!at} secret={a.secret} size={badge} />
                   <View style={[styles.plate, { backgroundColor: at ? c.brass : '#3a281b', borderColor: at ? c.brassDeep : '#2a1c12' }]}>
@@ -89,7 +89,8 @@ const styles = StyleSheet.create({
   board: { borderRadius: radius.panel, borderWidth: 3, borderColor: '#1a110a', overflow: 'hidden' },
   seam: { position: 'absolute', left: 0, right: 0, height: 2, backgroundColor: '#1a110a', opacity: 0.6 },
   grid: { flexDirection: 'row', flexWrap: 'wrap' },
-  cell: { alignItems: 'center', paddingVertical: space.sm, gap: 6, minHeight: 44 },
+  // Percentage width: exactly three across on every screen size.
+  cell: { width: `${100 / COLUMNS}%`, alignItems: 'center', paddingVertical: space.sm, gap: 6, minHeight: 44 },
   plate: { borderWidth: 1, borderRadius: 3, paddingHorizontal: 6, paddingVertical: 2, maxWidth: '92%' },
   plateText: { fontFamily: fonts.slab, fontSize: 11, letterSpacing: 0.5, textTransform: 'uppercase' },
 });
