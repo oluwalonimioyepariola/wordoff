@@ -1,7 +1,7 @@
 import { fileURLToPath } from "node:url";
 import type { NextConfig } from "next";
 
-// GitHub Pages serves the site from /<repo>; the deploy workflow sets this.
+// Set only when the site is served from a sub-path.
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 const nextConfig: NextConfig = {

@@ -9,5 +9,4 @@ npm run dev     # http://localhost:3000
 npm run build   # static export to out/
 ```
 
-Pushing changes under `web/` to `main` deploys the site to GitHub Pages
-(see `.github/workflows/pages.yml`). Screenshots live in `src/assets/screens/`.
+Deployed on Vercel with `web/` as the project root. Screenshots live in `src/assets/screens/`.
