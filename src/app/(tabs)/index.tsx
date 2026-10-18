@@ -1,10 +1,13 @@
 import { Redirect, router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, Share, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, Share, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path } from 'react-native-svg';
-import { MainStreetScene, Portrait, PosterPortrait } from '../../art';
+import Svg, { Circle, Path } from 'react-native-svg';
+import { Portrait } from '../../art';
+import { MainStreetHero } from '../../components/MainStreetHero';
 import { Button, Icon, Pips, Segmented } from '../../components/ui';
+import { WantedPoster } from '../../components/WantedPoster';
 import {
   BestOf,
   buildShareText,
@@ -26,17 +29,35 @@ import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
 import { fonts, radius, space, useTheme } from '../../theme';
 
-const STREAK_COPY = {
-  active: 'Today’s standoff is done.',
-  pending: 'Play today to keep it alive.',
-  'at-risk': 'Missed a day: a freeze covers it if you play.',
-  broken: 'A daily standoff starts a streak.',
-};
+const WOOD = '#8a5532';
+const WOOD_EDGE = '#2a160d';
+const CREAM = '#f6ead2';
+
+/** A hanging trail sign: planked wood, brass nail heads, an arrow end. */
+function TrailSign({ width, children }: { width: number; children: React.ReactNode }) {
+  const h = 104;
+  const body = width - 36;
+  return (
+    <View style={{ width, height: h }}>
+      <Svg width={width} height={h} style={StyleSheet.absoluteFill}>
+        <Path d={`M2 6 Q2 2 6 2 L${body} 2 L${width - 2} ${h / 2} L${body} ${h - 2} L6 ${h - 2} Q2 ${h - 2} 2 ${h - 6} Z`} fill={WOOD} stroke={WOOD_EDGE} strokeWidth={3} />
+        {/* plank seam and grain */}
+        <Path d={`M4 ${h / 2} L${body + 18} ${h / 2}`} stroke={WOOD_EDGE} strokeWidth={1.5} opacity={0.55} />
+        <Path d={`M20 22 Q${body / 2} 16 ${body - 20} 24`} stroke="#6e3f22" strokeWidth={1.2} fill="none" opacity={0.6} />
+        <Path d={`M30 78 Q${body / 2} 86 ${body - 10} 76`} stroke="#6e3f22" strokeWidth={1.2} fill="none" opacity={0.6} />
+        {[14, body - 12].map((x) =>
+          [16, h - 16].map((y) => <Circle key={`${x}-${y}`} cx={x} cy={y} r={3} fill="#d2a54a" stroke={WOOD_EDGE} strokeWidth={1} />),
+        )}
+      </Svg>
+      <View style={{ position: 'absolute', left: 28, right: 52, top: 0, bottom: 0, justifyContent: 'center' }}>{children}</View>
+    </View>
+  );
+}
 
 /**
- * Main Street. The scene runs edge to edge under the status bar with the
- * wordmark in the sky; below it a plank wall holds today's wanted poster, the
- * trail sign for Level mode, and the lineup for a Quick Duel.
+ * Main Street. Sundown scene under the status bar with the wordmark in the
+ * sky; a plank wall below holds today's wanted poster, the trail sign for
+ * Level mode, and the lineup for a Quick Duel.
  */
 export default function MainStreet() {
   const { c } = useTheme();
@@ -50,6 +71,10 @@ export default function MainStreet() {
   const [countdown, setCountdown] = useState(msUntilNextDay());
   const [rival, setRival] = useState<OpponentId>(match?.opponent ?? 'gunslinger');
   const [bestOf, setBestOf] = useState<BestOf>(match?.bestOf ?? 3);
+  const scrollY = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler((e) => {
+    scrollY.set(e.contentOffset.y);
+  });
 
   useEffect(() => {
     const t = setInterval(() => setCountdown(msUntilNextDay()), 1000);
@@ -64,143 +89,89 @@ export default function MainStreet() {
   const streak = streakStatus(stats, today);
   const level = getLevel(stats.levels.unlocked);
   const sceneH = insets.top + 300;
-  const verdict = record ? (record.result === 'win' ? 'CAUGHT' : record.result === 'loss' ? 'SHOT DOWN' : 'ESCAPED') : null;
+  const inner = width - space.base * 2;
 
   return (
     <View style={{ flex: 1, backgroundColor: c.plank }}>
-      <ScrollView contentContainerStyle={{ paddingBottom: space.xxl * 2 }} contentInsetAdjustmentBehavior="never">
-        {/* Main street at sundown, wordmark in the sky. */}
-        <View style={{ height: sceneH }}>
-          <MainStreetScene width={width} height={sceneH} youColor={c.you} rivalColor={c.rival} />
-          <View style={[styles.sky, { top: insets.top + space.sm }]}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.wordmark} accessibilityRole="header">
-                WORDOFF
-              </Text>
-              <Text style={styles.tagline}>One word. Two guns. High noon.</Text>
-            </View>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="How to duel"
-              hitSlop={10}
-              onPress={() => router.push('/how-to-play')}
-              style={styles.help}
-            >
-              <Icon name="help-circle-outline" size={26} color="#f6ead2" />
-            </Pressable>
-          </View>
-          <View
-            style={[styles.tally, { top: insets.top + 96 }]}
-            accessibilityLabel={`${streak.streak} day streak, ${stats.daily.freezes} streak freezes. ${STREAK_COPY[streak.status]}`}
-          >
-            <Icon name="fire" size={18} color="#f0b858" />
-            <Text style={styles.tallyNum}>{streak.streak}</Text>
-            <Icon name="snowflake" size={16} color="#c9d4e8" />
-            <Text style={styles.tallyNum}>{stats.daily.freezes}</Text>
-            <Text style={styles.tallyCopy}>{STREAK_COPY[streak.status]}</Text>
-          </View>
-        </View>
+      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} contentContainerStyle={{ paddingBottom: 140 }} contentInsetAdjustmentBehavior="never">
+        <MainStreetHero
+          width={width}
+          height={sceneH}
+          topInset={insets.top}
+          scrollY={scrollY}
+          streak={streak.streak}
+          freezes={stats.daily.freezes}
+          onHelp={() => router.push('/how-to-play')}
+        />
 
-        {/* The plank wall. */}
         <View style={styles.wall}>
-          {Array.from({ length: 16 }, (_, i) => (
-            <View key={i} pointerEvents="none" style={[styles.seam, { top: 70 * i + 40, backgroundColor: c.plankSeam }]} />
+          {/* plank seams and grain */}
+          {Array.from({ length: 18 }, (_, i) => (
+            <View key={i} pointerEvents="none" style={[styles.seam, { top: 64 * i, backgroundColor: c.plankSeam }]} />
+          ))}
+          {Array.from({ length: 18 }, (_, i) => (
+            <View key={`g${i}`} pointerEvents="none" style={[styles.grain, { top: 64 * i + 26, left: (i * 53) % 120, backgroundColor: c.plankGrain }]} />
           ))}
 
-          {/* Today's wanted poster, nailed up. */}
           <View style={styles.posterWrap}>
-            <View style={[styles.poster, { backgroundColor: c.card }]}>
-              <View style={[styles.nail, { backgroundColor: c.walnut }]} />
-              <Text style={[styles.wanted, { color: c.cardInk }]}>WANTED</Text>
-              <Text style={[styles.posterSub, { color: c.cardInk }]}>Daily Standoff #{today}</Text>
-              <View style={styles.posterBody}>
-                <View>
-                  <PosterPortrait who={todayRival.id} size={118} />
-                  {verdict && (
-                    <View style={[styles.stamp, { borderColor: record!.result === 'win' ? c.you : c.rival }]}>
-                      <Text style={[styles.stampText, { color: record!.result === 'win' ? c.you : c.rival }]}>{verdict}</Text>
-                    </View>
-                  )}
-                </View>
-                <View style={{ flex: 1, gap: 6 }}>
-                  <Text style={[styles.posterName, { color: c.cardInk }]}>{todayRival.name}</Text>
-                  <Text style={{ color: c.inkSoft, fontSize: 14 }}>{todayRival.title}</Text>
-                  <Pips n={todayRival.difficulty} />
-                  <Text style={{ color: c.inkSoft, fontSize: 13, lineHeight: 18 }}>
-                    Same word, same rival for everyone today. Separate boards, both fire at once.
-                  </Text>
-                </View>
-              </View>
-              {record ? (
-                <>
-                  <View style={styles.rule} />
-                  <View style={styles.rowBetween}>
-                    <Text style={[styles.answer, { color: c.cardInk }]}>{record.answer.toUpperCase()}</Text>
-                    <Text style={{ color: c.inkSoft, fontSize: 14, fontVariant: ['tabular-nums'] }}>
-                      Next in {formatCountdown(countdown)}
-                    </Text>
-                  </View>
-                  {daily && (
-                    <Button
-                      kind="secondary"
-                      icon="share-variant"
-                      label="Share your card"
-                      onPress={() => Share.share({ message: buildShareText(daily, { colorblind: settings.colorblind }) })}
-                    />
-                  )}
-                </>
-              ) : (
-                <Button
-                  label={daily ? `Resume, row ${daily.round + 1}` : `Draw on ${todayRival.shortName}`}
-                  icon="pistol"
-                  onPress={() => router.push({ pathname: '/duel', params: { mode: 'daily' } })}
-                />
-              )}
-            </View>
+            <WantedPoster
+              width={inner - 12}
+              rival={todayRival}
+              day={today}
+              resumeRow={!record && daily ? daily.round + 1 : null}
+              verdict={
+                record
+                  ? {
+                      text: record.result === 'win' ? 'CAUGHT' : record.result === 'loss' ? 'SHOT DOWN' : 'ESCAPED',
+                      won: record.result === 'win',
+                      answer: record.answer.toUpperCase(),
+                      next: formatCountdown(countdown),
+                    }
+                  : null
+              }
+              onDraw={() => router.push({ pathname: '/duel', params: { mode: 'daily' } })}
+              onShare={daily ? () => Share.share({ message: buildShareText(daily, { colorblind: settings.colorblind }) }) : undefined}
+            />
           </View>
 
-          {/* The trail sign: Level mode. */}
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`Play level ${level.id}, ${level.title}`}
-            onPress={() => router.push({ pathname: '/duel', params: { mode: 'level', id: String(level.id) } })}
-            style={({ pressed }) => [styles.signWrap, { transform: [{ rotate: '1deg' }, { scale: pressed ? 0.98 : 1 }] }]}
-          >
-            <View style={[styles.rope, { left: 34, backgroundColor: '#c9a46a' }]} />
-            <View style={[styles.rope, { right: 70, backgroundColor: '#c9a46a' }]} />
-            <View style={styles.signRow}>
-              <View style={[styles.sign, { backgroundColor: '#8a5a36', borderColor: c.walnut }]}>
-                <View style={styles.rowBetween}>
-                  <Text style={styles.signTitle}>THE TRAIL</Text>
-                  <View style={styles.rowCenter}>
-                    <Icon name="star-four-points" size={15} color="#f0c56a" />
-                    <Text style={styles.signStars}>
-                      {totalStars(stats)}/{LEVEL_COUNT * 3}
-                    </Text>
-                  </View>
-                </View>
-                <Text style={styles.signLevel}>
+          {/* The trail: Level mode. */}
+          <View style={styles.signBlock}>
+            <View style={[styles.rope, { left: 40 }]} />
+            <View style={[styles.rope, { right: 80 }]} />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Play level ${level.id}, ${level.title}`}
+              onPress={() => router.push({ pathname: '/duel', params: { mode: 'level', id: String(level.id) } })}
+              style={({ pressed }) => ({ transform: [{ rotate: '0.8deg' }, { scale: pressed ? 0.98 : 1 }] })}
+            >
+              <TrailSign width={inner}>
+                <Text style={styles.signLevel} numberOfLines={1}>
                   Level {level.id} · {level.title}
                 </Text>
-                <Text style={styles.signBlurb}>{levelBlurb(level)}</Text>
-              </View>
-              <Svg width={34} height={96} viewBox="0 0 34 96" style={{ marginLeft: -3 }}>
-                <Path d="M0 0 L6 0 L34 48 L6 96 L0 96 Z" fill="#8a5a36" stroke={c.walnut} strokeWidth={3} />
-              </Svg>
-            </View>
-          </Pressable>
-          <Pressable onPress={() => router.push('/levels')} hitSlop={8} style={styles.mapLink} accessibilityRole="link">
-            <Icon name="map-outline" size={18} color={c.feltInk} />
-            <Text style={[styles.mapText, { color: c.feltInk }]}>See the whole trail</Text>
-          </Pressable>
+                <Text style={styles.signBlurb} numberOfLines={1}>
+                  {levelBlurb(level)}
+                </Text>
+                <View style={[styles.rowCenter, { marginTop: 4 }]}>
+                  <Icon name="star-four-points" size={13} color="#f0c56a" />
+                  <Text style={styles.signStars}>
+                    {totalStars(stats)} of {LEVEL_COUNT * 3} stars on the trail
+                  </Text>
+                </View>
+              </TrailSign>
+            </Pressable>
+            <Pressable onPress={() => router.push('/levels')} hitSlop={8} style={styles.mapLink} accessibilityRole="link">
+              <Icon name="map-outline" size={16} color="#e9cf9f" />
+              <Text style={styles.mapText}>See the whole trail</Text>
+            </Pressable>
+          </View>
 
           {/* The lineup: Quick Duel. */}
-          <View style={[styles.lineup, { backgroundColor: c.walnut }]}>
-            <Text style={[styles.lineupTitle, { color: c.walnutInk }]}>Call out a rival</Text>
+          <View style={[styles.lineup, { backgroundColor: '#1e120a' }]}>
+            <Text style={styles.lineupLabel}>CALL OUT A RIVAL</Text>
             {match ? (
               <>
-                <Text style={{ color: c.feltInkSoft, fontSize: 15 }}>
-                  Best of {match.bestOf} vs {getOpponent(match.opponent).name}: {match.scores.you}–{match.scores.ai}
+                <Text style={styles.lineupCopy}>
+                  Best of {match.bestOf} vs {getOpponent(match.opponent).name} · {match.scores.you}–{match.scores.ai}
                 </Text>
                 <Button label="Continue the match" icon="pistol" onPress={() => router.push({ pathname: '/duel', params: { mode: 'quick' } })} />
                 <Button kind="secondary" onFelt label="Abandon match" onPress={abandonMatch} />
@@ -218,16 +189,16 @@ export default function MainStreet() {
                         accessibilityState={{ selected: on }}
                         accessibilityLabel={`${p.name}, difficulty ${p.difficulty} of 3`}
                         onPress={() => setRival(id)}
-                        style={[styles.face, { opacity: on ? 1 : 0.55, transform: [{ translateY: on ? -4 : 0 }] }]}
+                        style={[styles.face, { opacity: on ? 1 : 0.5, transform: [{ translateY: on ? -4 : 0 }] }]}
                       >
-                        <Portrait who={id} size={72} ring={on ? c.brass : '#5a3a24'} />
-                        <Text style={[styles.faceName, { color: on ? c.walnutInk : c.feltInkSoft }]}>{p.shortName.replace('The ', '')}</Text>
+                        <Portrait who={id} size={74} ring={on ? '#e0b552' : '#4a3020'} />
+                        <Text style={[styles.faceName, { color: on ? CREAM : '#c9b18c' }]}>{p.shortName.replace('The ', '')}</Text>
                         <Pips n={p.difficulty} onFelt />
                       </Pressable>
                     );
                   })}
                 </View>
-                <Text style={{ color: c.feltInkSoft, fontSize: 14, textAlign: 'center' }}>{getOpponent(rival).blurb}</Text>
+                <Text style={styles.lineupCopy}>{getOpponent(rival).blurb}</Text>
                 <Segmented<4 | 5>
                   onFelt
                   options={[
@@ -260,86 +231,29 @@ export default function MainStreet() {
             )}
           </View>
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  sky: { position: 'absolute', left: space.base, right: space.sm, flexDirection: 'row', alignItems: 'flex-start' },
-  wordmark: {
-    fontFamily: fonts.display,
-    fontSize: 46,
-    color: '#f6ead2',
-    letterSpacing: 1,
-    textShadowColor: 'rgba(46,29,19,0.55)',
-    textShadowOffset: { width: 0, height: 3 },
-    textShadowRadius: 6,
-  },
-  tagline: { color: '#fbecd0', fontSize: 15, fontWeight: '600', marginTop: -2 },
-  help: { minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
-  tally: {
-    position: 'absolute',
-    left: space.base,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: 'rgba(46,29,19,0.62)',
-    borderRadius: radius.pill,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  tallyNum: { fontFamily: fonts.slab, fontSize: 16, color: '#f6ead2', marginRight: 4 },
-  tallyCopy: { color: '#e9d7b6', fontSize: 13 },
-  wall: { paddingHorizontal: space.base, paddingTop: space.lg, gap: space.lg, overflow: 'hidden' },
+  wall: { paddingHorizontal: space.base, paddingTop: space.xl, gap: space.xl, overflow: 'hidden' },
   seam: { position: 'absolute', left: 0, right: 0, height: 2 },
-  posterWrap: { transform: [{ rotate: '-1.2deg' }] },
-  poster: {
-    borderRadius: 4,
-    padding: space.base,
-    paddingTop: space.lg,
-    gap: space.sm,
-    shadowColor: '#000',
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 6,
-  },
-  nail: { position: 'absolute', top: 8, alignSelf: 'center', width: 10, height: 10, borderRadius: 5 },
-  wanted: { fontFamily: fonts.display, fontSize: 46, textAlign: 'center', letterSpacing: 4 },
-  posterSub: { fontFamily: fonts.slab, fontSize: 16, textAlign: 'center', letterSpacing: 2, textTransform: 'uppercase', marginTop: -6 },
-  posterBody: { flexDirection: 'row', gap: space.md, alignItems: 'center', marginVertical: space.xs },
-  posterName: { fontFamily: fonts.slab, fontSize: 21 },
-  stamp: { position: 'absolute', top: 44, left: -8, right: -8, borderWidth: 3, borderRadius: 6, paddingVertical: 2, alignItems: 'center', transform: [{ rotate: '-12deg' }], backgroundColor: 'rgba(246,234,210,0.6)' },
-  stampText: { fontFamily: fonts.display, fontSize: 18, letterSpacing: 1 },
-  rule: { height: 1, backgroundColor: '#cdb48a' },
+  grain: { position: 'absolute', width: 220, height: 1, opacity: 0.8, borderRadius: 1 },
+  posterWrap: { alignItems: 'center', transform: [{ rotate: '-1.4deg' }] },
+  signBlock: { marginTop: space.sm, gap: space.xs },
+  rope: { position: 'absolute', top: -26, width: 3, height: 30, backgroundColor: '#c9a46a', borderRadius: 1 },
   rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   rowCenter: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  answer: { fontFamily: fonts.slab, fontSize: 22, letterSpacing: 4 },
-  signWrap: { marginTop: space.sm },
-  rope: { position: 'absolute', top: -22, width: 3, height: 26 },
-  signRow: { flexDirection: 'row', alignItems: 'center' },
-  sign: {
-    flex: 1,
-    minHeight: 96,
-    borderWidth: 3,
-    borderRightWidth: 0,
-    borderTopLeftRadius: 8,
-    borderBottomLeftRadius: 8,
-    paddingHorizontal: space.base,
-    paddingVertical: space.sm,
-    justifyContent: 'center',
-    gap: 2,
-  },
-  signTitle: { fontFamily: fonts.display, fontSize: 20, color: '#f6ead2', letterSpacing: 2 },
-  signStars: { fontFamily: fonts.slab, fontSize: 15, color: '#f6ead2' },
-  signLevel: { fontFamily: fonts.slab, fontSize: 18, color: '#f6ead2' },
-  signBlurb: { color: '#ecd9b6', fontSize: 13 },
-  mapLink: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', marginTop: -space.sm, minHeight: 44 },
-  mapText: { fontFamily: fonts.slabSemi, fontSize: 15, textDecorationLine: 'underline' },
-  lineup: { borderRadius: radius.panel, padding: space.base, gap: space.md, borderWidth: 3, borderColor: '#1a110a' },
-  lineupTitle: { fontFamily: fonts.display, fontSize: 24, textAlign: 'center' },
-  faces: { flexDirection: 'row', justifyContent: 'space-around' },
+  signStars: { fontFamily: fonts.slabSemi, fontSize: 13, color: '#f0d9ae' },
+  signLevel: { fontFamily: fonts.slab, fontSize: 20, color: CREAM },
+  signBlurb: { color: '#ecd4a8', fontSize: 12 },
+  mapLink: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', minHeight: 44 },
+  mapText: { fontFamily: fonts.slabSemi, fontSize: 14, color: '#e9cf9f', textDecorationLine: 'underline' },
+  lineup: { borderRadius: radius.panel, padding: space.lg, gap: space.md, borderWidth: 1.5, borderColor: '#6e4a24' },
+  lineupLabel: { fontFamily: fonts.slab, fontSize: 13, letterSpacing: 3, color: '#e0b552', textAlign: 'center' },
+  lineupCopy: { color: '#c9b18c', fontSize: 14, textAlign: 'center', lineHeight: 20 },
+  faces: { flexDirection: 'row', justifyContent: 'space-around', marginTop: space.xs },
   face: { alignItems: 'center', gap: 4, minWidth: 80 },
   faceName: { fontFamily: fonts.slab, fontSize: 15 },
 });
