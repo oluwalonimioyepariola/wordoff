@@ -217,6 +217,12 @@ The platform's own tab bar (NativeTabs: Liquid Glass on iOS 26, Material on Andr
 ### Art
 All illustration is authored vector (react-native-svg, `src/art`): a single-action revolver, muzzle flash, cartridges, a lawman's star, saguaro, tumbleweed, the main-street standoff scene, and portraits of the cast (Rookie Rae, Dusty Vance, The Sheriff, and you as the Stranger). Portraits sit in a brass ring; the scene uses the seat colours for its two duelists.
 
+### Main Street (home)
+The Saloon tab opens on main street at sundown, edge to edge under the status bar: a dusk sky with the WORDOFF wordmark painted into it, the saloon's false front, the sun over the mesas, two duelists squared off. Below it, a plank wall (`plank`, seams in `plankSeam`) holds today's Daily as a WANTED poster nailed up crooked (portrait, rival, verdict stamp once played), Level mode as a hanging trail sign with an arrow end, and Quick Duel as a walnut board with the three rivals' portraits in a lineup.
+
+### Trophy Wall (awards)
+Every award is a badge hung on a walnut board with a brass nameplate, three across. Frames carry meaning: lawman's stars for duel skills, ribboned medals (navy and oxblood stripes) for streaks and milestones, belt buckles for the trail. Earned badges are polished brass with an emblem on a cream plate (secret ones on oxblood enamel); locked ones are dark blanks with a padlock or question mark. Tapping a badge opens it large in a form sheet.
+
 ### Motion
 - Shot: the shooter's revolver kicks 14° and flashes, finished inside 150ms.
 - Ammo: one cartridge per row a player still gets to fire; a fired round lifts out and fades (150ms).
