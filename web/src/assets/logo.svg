@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+
+    <defs>
+      <linearGradient id="brass" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#f0c870"/><stop offset="0.55" stop-color="#c8962e"/><stop offset="1" stop-color="#8f6519"/>
+      </linearGradient>
+      <radialGradient id="med" cx="0.4" cy="0.35" r="0.75">
+        <stop offset="0" stop-color="#3a2416"/><stop offset="1" stop-color="#24160d"/>
+      </radialGradient>
+    </defs>
+    <polygon points="256.00,60.00 316.00,162.08 434.40,163.00 376.00,266.00 434.40,369.00 316.00,369.92 256.00,472.00 196.00,369.92 77.60,369.00 136.00,266.00 77.60,163.00 196.00,162.08" fill="#5e3f0e"/>
+    <polygon points="256.00,50.00 316.00,152.08 434.40,153.00 376.00,256.00 434.40,359.00 316.00,359.92 256.00,462.00 196.00,359.92 77.60,359.00 136.00,256.00 77.60,153.00 196.00,152.08" fill="url(#brass)"/>
+    <circle cx="256" cy="42" r="22" fill="url(#brass)" stroke="#5e3f0e" stroke-width="4"/><circle cx="441.32943640986986" cy="149" r="22" fill="url(#brass)" stroke="#5e3f0e" stroke-width="4"/><circle cx="441.3294364098699" cy="362.99999999999994" r="22" fill="url(#brass)" stroke="#5e3f0e" stroke-width="4"/><circle cx="256" cy="470" r="22" fill="url(#brass)" stroke="#5e3f0e" stroke-width="4"/><circle cx="70.67056359013017" cy="363.00000000000006" r="22" fill="url(#brass)" stroke="#5e3f0e" stroke-width="4"/><circle cx="70.67056359013006" cy="149.0000000000001" r="22" fill="url(#brass)" stroke="#5e3f0e" stroke-width="4"/>
+    <circle cx="256" cy="256" r="128" fill="#5e3f0e"/>
+    <circle cx="256" cy="256" r="120" fill="url(#med)"/>
+    <circle cx="256" cy="256" r="108" fill="none" stroke="#c8962e" stroke-width="3" stroke-dasharray="6 7" opacity="0.8"/>
+    
+    <g transform="translate(256 258) scale(0.92)">
+      <polygon points="-92,-48 -60,-48 -30,62 -62,62" fill="#f6ead2"/>
+      <polygon points="-56,62 -34,62 10,-22 -12,-22" fill="#f6ead2"/>
+      <polygon points="56,62 34,62 -10,-22 12,-22" fill="#f6ead2"/>
+      <polygon points="92,-48 60,-48 30,62 62,62" fill="#f6ead2"/>
+      <rect x="-106" y="-64" width="60" height="18" fill="#f6ead2"/>
+      <rect x="46" y="-64" width="60" height="18" fill="#f6ead2"/>
+    </g>
+    <circle cx="300" cy="346" r="8" fill="#9e2b25"/><circle cx="300" cy="346" r="3.5" fill="#2a160d"/></svg>
