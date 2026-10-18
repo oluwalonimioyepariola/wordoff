@@ -17,7 +17,9 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.wordoff.app",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -34,6 +36,17 @@
         }
       ]
     ],
-    "scheme": "wordoff"
+    "scheme": "wordoff",
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "36f76eb9-3331-4090-8418-8db2113c8821"
+      }
+    },
+    "owner": "lux.xx"
   }
 }
