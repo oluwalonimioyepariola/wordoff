@@ -236,6 +236,9 @@ A hand-drawn map pinned to the plank wall: aged parchment, MAP OF THE TERRITORY 
 ### The Ledger (stats)
 A bookkeeper's page on the plank wall: a red margin rule, RECORD OF STANDOFFS in wood type, three headline figures (duels, won, day streak) split by rules, then ruled sections (The Daily, Feats, shots to the word as ink bars, a bounty record with rival portraits and navy wins / oxblood losses) and a link to turn to the daily history.
 
+### Settings and History
+Settings is a single sheet, RULES OF THE HOUSE: ruled sections (How you duel, At the table, Looks), native switches tinted brass, and choices set as tokens (the chosen one struck in walnut ink, the rest dashed outlines), signed off "By order of the Sheriff". History is a STANDOFF CALENDAR sheet (Monday-first weeks, each played day stamped W / L / D in the seat colours, today boxed) above THE BOOK, one ruled entry per Daily with the rival's portrait. Both use the shared PlankScreen + PaperSheet pieces.
+
 Dark screens keep a light status bar and a plank-coloured fade under it, so the clock never sits on paper.
 
 ### Trophy Room (awards)
