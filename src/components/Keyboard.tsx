@@ -2,6 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Mark } from '../engine';
+import { WoodGrain } from './FeltTable';
 import { fonts, radius, useTheme } from '../theme';
 
 const ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
@@ -32,6 +33,8 @@ const Key = memo(function Key({ label, value, flex = 1, mark, kind = 'letter', d
   const scored = markColor(mark);
   const bg = kind === 'fire' ? c.brass : kind === 'back' ? c.cardEdge : scored.bg;
   const fg = kind === 'fire' ? c.onBrass : kind === 'back' ? c.cardInk : scored.fg;
+  // The key's lower lip: a darker band so each key reads as a raised ivory block.
+  const lip = kind === 'fire' ? '#7a5310' : mark ? 'rgba(0,0,0,0.32)' : '#bfa47a';
   return (
     <Pressable
       accessibilityRole="button"
@@ -43,16 +46,24 @@ const Key = memo(function Key({ label, value, flex = 1, mark, kind = 'letter', d
         {
           flex,
           backgroundColor: bg,
+          borderBottomColor: lip,
+          borderBottomWidth: pressed ? 1 : 4,
           opacity: disabled ? 0.5 : 1,
-          transform: [{ translateY: pressed ? 2 : 0 }],
-          shadowOpacity: pressed ? 0 : 0.45,
+          transform: [{ translateY: pressed ? 3 : 0 }],
+          shadowOpacity: pressed ? 0.1 : 0.5,
         },
       ]}
     >
-      {kind === 'back' ? (
+      {kind === 'fire' ? (
+        <View style={styles.sealInner}>
+          <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} style={[styles.fire, { color: fg }]}>
+            {label}
+          </Text>
+        </View>
+      ) : kind === 'back' ? (
         <MaterialCommunityIcons name="backspace-outline" size={22} color={fg} />
       ) : (
-        <Text style={[kind === 'fire' ? styles.fire : styles.label, { color: fg }]}>{label}</Text>
+        <Text style={[styles.label, { color: fg }]}>{label}</Text>
       )}
     </Pressable>
   );
@@ -63,6 +74,7 @@ export function Keyboard({ keys, disabled, onLetter, onFire, onBack }: Props) {
   const { c } = useTheme();
   return (
     <View style={[styles.rail, { backgroundColor: c.walnut }]}>
+      <WoodGrain lines={7} />
       {ROWS.map((row, r) => (
         <View key={row} style={styles.row}>
           {r === 2 && <Key label="FIRE" value="fire" kind="fire" flex={1.7} disabled={disabled} onPress={onFire} a11y="Fire guess" />}
@@ -80,15 +92,27 @@ const styles = StyleSheet.create({
   rail: { gap: 8, paddingHorizontal: 6, paddingTop: 10, paddingBottom: 6 },
   row: { flexDirection: 'row', gap: 5, justifyContent: 'center' },
   key: {
-    height: 54,
+    height: 56,
     borderRadius: radius.key,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowRadius: 0.5,
+    shadowRadius: 2,
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },
   label: { fontFamily: fonts.slab, fontSize: 19 },
-  fire: { fontFamily: fonts.display, fontSize: 15, letterSpacing: 1 },
+  fire: { fontFamily: fonts.display, fontSize: 14, letterSpacing: 1 },
+  sealInner: {
+    alignSelf: 'stretch',
+    flex: 1,
+    margin: 3,
+    paddingHorizontal: 2,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: '#7a5310',
+    borderRadius: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
