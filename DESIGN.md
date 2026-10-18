@@ -212,7 +212,18 @@ Cream keys on the walnut rail, scored like the cards; FIRE is the one brass key,
 Each row on the shared board opens with the seat chip of whoever fires it (YOU in navy, the rival's initial in oxblood). Scouts are a stack of brass chips in your seat strip.
 
 ### Navigation
-Native stack navigation with the platform back gesture; paper screens use a native grouped list (icon, label, chevron) for links.
+The platform's own tab bar (NativeTabs: Liquid Glass on iOS 26, Material on Android) with five rooms: Saloon, Levels, Stats, Awards, Settings, tinted brass. Tab switches never animate. The duel, History and How to duel are pushed or presented on the native stack with the platform back gesture.
+
+### Art
+All illustration is authored vector (react-native-svg, `src/art`): a single-action revolver, muzzle flash, cartridges, a lawman's star, saguaro, tumbleweed, the main-street standoff scene, and portraits of the cast (Rookie Rae, Dusty Vance, The Sheriff, and you as the Stranger). Portraits sit in a brass ring; the scene uses the seat colours for its two duelists.
+
+### Motion
+- Shot: the shooter's revolver kicks 14° and flashes, finished inside 150ms.
+- Ammo: one cartridge per row a player still gets to fire; a fired round lifts out and fades (150ms).
+- DRAW!: a 200ms cream flash over the table and a short horizontal shake.
+- Sudden death: a tumbleweed rolls across the felt once.
+- Result: the wanted poster eases in (250ms), then the verdict stamp lands from 1.6x at -12° (220ms), in the winner's seat colour.
+- Reduced motion keeps the flashes and fades and drops every kick, shake, roll and scale.
 
 ## Do's and Don'ts
 
