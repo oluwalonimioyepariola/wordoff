@@ -12,6 +12,8 @@ const zilla = Zilla_Slab({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://wordoff.oluwalonimioyepariola.com"),
+  alternates: { canonical: "/" },
   title: "Wordoff · A word standoff",
   description:
     "Wordoff is a word game played as a duel. You and a rival chase the same secret word across one saloon table. Free, offline, open source.",
@@ -19,6 +21,8 @@ export const metadata: Metadata = {
     title: "Wordoff · A word standoff",
     description: "One word. Two guns. High noon. A word-game duel against three rivals, free and fully offline.",
     type: "website",
+    url: "/",
+    images: ["/icon.png"],
   },
 };
 
