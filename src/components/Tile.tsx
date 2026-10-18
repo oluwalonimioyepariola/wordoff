@@ -77,7 +77,7 @@ export function Tile({ letter, mark, flipDelay = null, bounceDelay = null, size,
       ? { bg: c.correct, fg: c.onCorrect, edge: c.correct }
       : dealt
         ? { bg: c.card, fg: c.cardInk, edge: c.cardEdge }
-        : { bg: 'transparent', fg: c.cardInk, edge: c.feltInkSoft };
+        : { bg: 'rgba(20,10,4,0.3)', fg: c.cardInk, edge: 'rgba(0,0,0,0.35)' };
 
   const cardStyle = useAnimatedStyle(() => {
     const p = flip.value;
@@ -100,8 +100,9 @@ export function Tile({ letter, mark, flipDelay = null, bounceDelay = null, size,
       }
       style={[
         styles.card,
-        { width: size, height: size, borderStyle: dealt || mark ? 'solid' : 'dashed' },
-        dealt || mark ? styles.raised : null,
+        { width: size, height: size },
+        // An empty slot is a well pressed into the felt: dark, with lamplight catching its lower lip.
+        dealt || mark ? styles.raised : styles.well,
         cardStyle,
       ]}
     >
@@ -133,6 +134,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 3,
   },
+  well: { borderBottomColor: 'rgba(255,226,176,0.16)', borderBottomWidth: 1.5 },
   letter: { fontFamily: fonts.slab, textAlign: 'center' },
   backWrap: { padding: 3 },
   backBorder: { flex: 1, borderWidth: 1, borderRadius: radius.tile - 2, alignItems: 'center', justifyContent: 'center' },
