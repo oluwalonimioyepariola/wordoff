@@ -55,8 +55,11 @@ export default function StatsScreen() {
         {stats.distribution.map((n, i) => (
           <View key={i} style={styles.distRow}>
             <Text style={{ color: c.ink, width: 28, fontWeight: '700' }}>{i < 6 ? i + 1 : 'SD'}</Text>
-            <View style={[styles.bar, { width: `${Math.max(8, (n / maxDist) * 100)}%`, backgroundColor: n ? c.you : c.hairline }]}>
-              <Text style={styles.barText}>{n}</Text>
+            {/* The bar is a share of its own track, so it never runs past the card. */}
+            <View style={styles.track}>
+              <View style={[styles.bar, { width: `${Math.max(12, (n / maxDist) * 100)}%`, backgroundColor: n ? c.you : c.hairline }]}>
+                <Text style={styles.barText}>{n}</Text>
+              </View>
             </View>
           </View>
         ))}
@@ -102,6 +105,7 @@ const styles = StyleSheet.create({
   value: { fontSize: 23, fontFamily: fonts.slab },
   label: { fontSize: 11, textAlign: 'center' },
   distRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  track: { flex: 1 },
   bar: { borderRadius: 4, paddingHorizontal: 6, paddingVertical: 3, alignItems: 'flex-end' },
   barText: { color: '#fff', fontWeight: '700', fontSize: 12 },
   vsRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6 },
