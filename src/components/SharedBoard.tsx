@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
+import Svg, { Circle, Rect } from 'react-native-svg';
 import { PlayerId, Shot, SuddenDeathHint } from '../engine';
 import { fonts, motion, useTheme } from '../theme';
 import { Tile } from './Tile';
@@ -20,26 +21,27 @@ interface Props {
   celebrate?: boolean;
 }
 
-/** A seat chip: a poker chip in the seat's colour, marking who fires a row. */
-function SeatChip({ owner, label, size, active }: { owner: PlayerId; label: string; size: number; active: boolean }) {
+/**
+ * A seat chip: a real poker chip in the seat's colour, notched edge and inlaid
+ * centre, marking who fires a row. Rows still to come show it ghosted.
+ */
+export function SeatChip({ owner, label, size, active }: { owner: PlayerId; label: string; size: number; active: boolean }) {
   const { c } = useTheme();
   const color = owner === 'you' ? c.you : c.rival;
+  const notches = Array.from({ length: 8 }, (_, i) => (i * 360) / 8);
   return (
-    <View
-      accessibilityLabel={owner === 'you' ? 'Your row' : 'Rival row'}
-      style={[
-        styles.chip,
-        {
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          backgroundColor: active ? color : 'transparent',
-          borderColor: active ? c.feltInk : color,
-          opacity: active ? 1 : 0.6,
-        },
-      ]}
-    >
-      <Text style={{ color: active ? c.feltInk : c.feltInkSoft, fontFamily: fonts.slab, fontSize: size * 0.34 }}>{label}</Text>
+    <View accessibilityLabel={owner === 'you' ? 'Your row' : 'Rival row'} style={{ width: size, height: size, opacity: active ? 1 : 0.38 }}>
+      <Svg width={size} height={size} viewBox="0 0 40 40">
+        <Circle cx={20} cy={21} r={19} fill="#000" opacity={0.35} />
+        <Circle cx={20} cy={20} r={19} fill={color} />
+        {notches.map((deg) => (
+          <Rect key={deg} x={18} y={1} width={4} height={6} rx={1} fill="#f1e3c6" transform={`rotate(${deg} 20 20)`} />
+        ))}
+        <Circle cx={20} cy={20} r={12.5} fill={color} stroke="#f1e3c6" strokeWidth={1.2} strokeDasharray="2 2" />
+      </Svg>
+      <View style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}>
+        <Text style={{ color: '#f6ead2', fontFamily: fonts.slab, fontSize: size * 0.27 }}>{label}</Text>
+      </View>
     </View>
   );
 }
@@ -61,7 +63,7 @@ export function SharedBoard({
   tileSize,
   celebrate = false,
 }: Props) {
-  const chip = Math.max(26, Math.round(tileSize * 0.52));
+  const chip = Math.max(28, Math.round(tileSize * 0.56));
 
   return (
     <View style={styles.board} accessibilityLabel="Shared board">
@@ -105,5 +107,4 @@ export function SharedBoard({
 const styles = StyleSheet.create({
   board: { gap: 7, alignItems: 'center' },
   row: { flexDirection: 'row', gap: 7, alignItems: 'center' },
-  chip: { borderWidth: 2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' },
 });
