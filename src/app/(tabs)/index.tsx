@@ -1,9 +1,9 @@
 import { Redirect, router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, Share, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
-import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
+import Animated, { useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Circle, Path } from 'react-native-svg';
+import Svg, { Circle, Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 import { Portrait } from '../../art';
 import { MainStreetHero } from '../../components/MainStreetHero';
 import { Button, Icon, Pips, Segmented } from '../../components/ui';
@@ -25,6 +25,7 @@ import {
   streakStatus,
   totalStars,
 } from '../../engine';
+import { LightStatusBar } from '../../game/statusBar';
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
 import { fonts, radius, space, useTheme } from '../../theme';
@@ -74,6 +75,8 @@ export default function MainStreet() {
   const onScroll = useAnimatedScrollHandler((e) => {
     scrollY.set(e.contentOffset.y);
   });
+  // The fade only appears once the scene has scrolled away.
+  const scrimStyle = useAnimatedStyle(() => ({ opacity: Math.min(1, Math.max(0, (scrollY.get() - 180) / 80)) }));
 
   useEffect(() => {
     const t = setInterval(() => setCountdown(msUntilNextDay()), 1000);
@@ -92,6 +95,8 @@ export default function MainStreet() {
 
   return (
     <View style={{ flex: 1, backgroundColor: c.plank }}>
+      {/* The sky behind the status bar is dark: keep the clock readable. */}
+      <LightStatusBar />
       <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} contentContainerStyle={{ paddingBottom: 140 }} contentInsetAdjustmentBehavior="never">
         <MainStreetHero
           width={width}
@@ -245,6 +250,19 @@ export default function MainStreet() {
           </View>
         </View>
       </Animated.ScrollView>
+      {/* once the poster scrolls up, a dark fade keeps the light clock legible */}
+      <Animated.View pointerEvents="none" style={[{ position: 'absolute', top: 0, left: 0, right: 0, height: insets.top + 16 }, scrimStyle]}>
+        <Svg width={width} height={insets.top + 16}>
+          <Defs>
+            <LinearGradient id="scrim" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#1e120a" stopOpacity="1" />
+              <Stop offset="0.7" stopColor="#1e120a" stopOpacity="0.85" />
+              <Stop offset="1" stopColor="#1e120a" stopOpacity="0" />
+            </LinearGradient>
+          </Defs>
+          <Rect x={0} y={0} width={width} height={insets.top + 16} fill="url(#scrim)" />
+        </Svg>
+      </Animated.View>
     </View>
   );
 }
