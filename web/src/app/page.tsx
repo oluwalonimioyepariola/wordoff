@@ -14,6 +14,21 @@ import { Sundown } from "@/components/Sundown";
 import { FeltRow, Ornament, Phone, Star } from "@/components/Table";
 
 const REPO = "https://github.com/oluwalonimioyepariola/wordoff";
+// Always the newest APK attached to the latest GitHub release.
+const APK = `${REPO}/releases/latest/download/wordoff.apk`;
+const RELEASES = `${REPO}/releases/latest`;
+
+/** The Android robot head, simplified. */
+function AndroidMark({ className = "size-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M17.6 9.48l1.84-3.18a.38.38 0 0 0-.66-.38l-1.86 3.22A11.4 11.4 0 0 0 12 8.2c-1.77 0-3.43.33-4.92.94L5.22 5.92a.38.38 0 0 0-.66.38L6.4 9.48A10.6 10.6 0 0 0 1 18h22a10.6 10.6 0 0 0-5.4-8.52zM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"
+      />
+    </svg>
+  );
+}
 
 const RIVALS = [
   {
@@ -103,13 +118,10 @@ export default function Home() {
                 A word game played as a duel. You and your rival chase the same secret word across one saloon table, and whoever lands it first wins.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-6">
-                <a href="#play" className="seal text-lg">
+                <a href={APK} className="seal text-lg" download>
                   <span>
-                    <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true">
-                      <path fill="currentColor" d="M12 1.5l2.6 4.7 5.4-.4-2.6 4.7 2.6 4.7-5.4-.4L12 19.5l-2.6-4.7-5.4.4 2.6-4.7L4 5.8l5.4.4z" />
-                      <circle cx="12" cy="10.5" r="2.6" fill="#7a5310" />
-                    </svg>
-                    DRAW
+                    <AndroidMark />
+                    DOWNLOAD FOR ANDROID
                   </span>
                 </a>
                 <a href={REPO} className="font-slab text-lg font-semibold text-[#f0d9ae] underline decoration-brass/60 underline-offset-4 hover:text-brass-hi">
@@ -261,11 +273,19 @@ export default function Home() {
             <Reveal>
               <h2 className="font-display text-[clamp(32px,4.6vw,48px)] text-[#f8e8c8]">Play it today</h2>
               <p className="mt-4 max-w-[48ch] text-[#e9d7b6]">
-                Wordoff isn’t in the app stores yet. It’s an open-source React Native app built with Expo, so you can run it on your own phone in a couple of minutes with the free Expo Go app.
+                On Android, download the APK and open it. Your phone will ask you to allow installs from your browser the first time. Not in the app stores yet; on iPhone, run it with the free Expo Go app.
               </p>
-              <a href={REPO} className="seal mt-8 text-[17px]">
-                <span>GET THE CODE</span>
-              </a>
+              <div className="mt-8 flex flex-wrap items-center gap-5">
+                <a href={APK} className="seal text-[17px]" download>
+                  <span>
+                    <AndroidMark />
+                    GET THE APK
+                  </span>
+                </a>
+                <a href={RELEASES} className="font-slab text-lg font-semibold text-[#f0d9ae] underline decoration-brass/60 underline-offset-4 hover:text-brass-hi">
+                  All releases
+                </a>
+              </div>
             </Reveal>
             <Reveal delay={120}>
               <pre className="overflow-x-auto rounded-xl border border-[#4d3220] bg-[#1a0f08] p-6 font-mono text-[15px] leading-7 text-[#f0d9ae]">
