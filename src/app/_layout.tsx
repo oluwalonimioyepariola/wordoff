@@ -32,7 +32,8 @@ export default function RootLayout() {
             contentStyle: { backgroundColor: c.canvas },
           }}
         >
-          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="history" options={{ title: 'History' }} />
           <Stack.Screen name="duel" options={{ headerShown: false, gestureEnabled: false }} />
           <Stack.Screen name="how-to-play" options={{ title: 'How to duel', presentation: 'modal' }} />
         </Stack>
