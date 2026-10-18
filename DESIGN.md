@@ -230,8 +230,8 @@ The felt is lit from above: a warm pool of lamplight in the middle falling off t
 ### House Rules (how to duel)
 A single aged handbill on the plank wall: HOUSE RULES in wood type, five rules marked with oxblood roman numerals and divided by ornament rules, each illustrated with real pieces from the table (felt rows, chips, cards, revolver, scout chip, streak medallion), closed by a SADDLE UP seal.
 
-### Trophy Wall (awards)
-Every award is a badge hung on a walnut board with a brass nameplate, three across. Frames carry meaning: lawman's stars for duel skills, ribboned medals (navy and oxblood stripes) for streaks and milestones, belt buckles for the trail. Earned badges are polished brass with an emblem on a cream plate (secret ones on oxblood enamel); locked ones are dark blanks with a padlock or question mark. Tapping a badge opens it large in a form sheet.
+### Trophy Room (awards)
+A lamplit walnut room (status bar text light, a walnut fade under it on scroll). The header gives the count and a brass rail with rivets at each quarter. The latest badge gets its own spotlit panel with its name in wood type; every other badge sits three to a shelf (lit front edge, shadow below) with a warm glow behind earned ones and an engraved brass nameplate held by two screws. Locked badges are dark blanks on dark plates. Tapping opens the badge large under a spotlight, with an EARNED nameplate.
 
 ### Motion
 - Shot: the shooter's revolver kicks 14° and flashes, finished inside 150ms.
