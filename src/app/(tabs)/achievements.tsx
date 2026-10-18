@@ -1,8 +1,8 @@
 import { Text, View } from 'react-native';
-import { Card, Icon, P, Screen } from '../components/ui';
-import { ACHIEVEMENTS } from '../engine';
-import { useProfile } from '../store/profile';
-import { fonts, useTheme } from '../theme';
+import { Card, Icon, P, Screen } from '../../components/ui';
+import { ACHIEVEMENTS } from '../../engine';
+import { useProfile } from '../../store/profile';
+import { fonts, useTheme } from '../../theme';
 
 export default function AchievementsScreen() {
   const { c } = useTheme();
@@ -10,7 +10,7 @@ export default function AchievementsScreen() {
   const count = ACHIEVEMENTS.filter((a) => unlocked[a.id]).length;
 
   return (
-    <Screen title="Achievements">
+    <Screen title="Awards" tab>
       <P soft>
         {count} of {ACHIEVEMENTS.length} unlocked
       </P>
