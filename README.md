@@ -12,6 +12,10 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/oluwalonimioyepariola/wordoff/releases/latest/download/wordoff.apk"><b>⬇ Download for Android (APK)</b></a>
+</p>
+
+<p align="center">
   <a href="https://oluwalonimioyepariola.github.io/wordoff/"><b>Landing page</b></a> ·
   <a href="#play-it">Play it</a> ·
   <a href="#screens">Screens</a> ·
@@ -84,7 +88,9 @@ Real screenshots from the working prototype in the iOS Simulator.
 
 ## Play it
 
-Wordoff isn't in the app stores yet. Run it on your phone with the free **Expo Go** app:
+**Android:** download [`wordoff.apk`](https://github.com/oluwalonimioyepariola/wordoff/releases/latest/download/wordoff.apk) from the [latest release](https://github.com/oluwalonimioyepariola/wordoff/releases/latest) and open it on your phone. The first time, Android asks you to allow installs from your browser or files app.
+
+**iPhone or from source:** Wordoff isn't in the app stores yet. Run it with the free **Expo Go** app:
 
 ```bash
 git clone https://github.com/oluwalonimioyepariola/wordoff
@@ -106,6 +112,13 @@ npm test             # engine tests (node:test via tsx)
 npm run typecheck
 npm run build:words  # regenerate word lists from scripts/answers*.txt
 node scripts/build-brand.mjs   # regenerate the logo and app icons
+```
+
+Android builds run on [EAS Build](https://docs.expo.dev/build/introduction/):
+
+```bash
+npx eas-cli build -p android --profile preview   # installable APK
+npx eas-cli build -p android --profile production   # Play Store bundle
 ```
 
 | Path | What lives there |
