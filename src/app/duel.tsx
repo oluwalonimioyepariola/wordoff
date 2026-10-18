@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Board } from '../components/Board';
 import { Keyboard } from '../components/Keyboard';
 import { PosterPortrait } from '../art';
+import { FeltLight, WoodGrain } from '../components/FeltTable';
 import { AmmoBelt, DrawFlash, Gunfire, PosterIn, Stamp, TumbleweedRoll } from '../components/Motion';
 import { CountdownOverlay, TauntBubble, Toast } from '../components/Overlays';
 import { RivalBoard } from '../components/RivalBoard';
@@ -162,9 +163,9 @@ function StandoffView({ initial, onNext, onLevel }: ViewProps) {
   const rivalName = g.profile.shortName;
   const rivalInitial = g.profile.name.replace('The ', '')[0];
   const over = g.phase === 'result' && !!state.outcome;
-  const chip = 28;
+  // Seat chips scale with the cards (0.56×), one on each side of the row.
   const tile = g.shared
-    ? Math.floor(Math.min(60, (width - 2 * space.base - 2 * chip - (g.length + 1) * 7) / g.length, (height - 560) / state.maxRows))
+    ? Math.floor(Math.min(60, (width - 2 * space.base - (g.length + 1) * 7) / (g.length + 1.12), (height - 570) / state.maxRows))
     : Math.floor(Math.min(58, (width - 2 * space.base - (g.length - 1) * 7) / g.length, (height - 520) / state.maxRows));
 
   const walkAway = () => {
@@ -240,6 +241,7 @@ function StandoffView({ initial, onNext, onLevel }: ViewProps) {
 
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: c.walnut }}>
+      <WoodGrain lines={9} />
       {/* The duel sits on the walnut rail, so the status bar text goes light. */}
       <StatusBar style="light" />
       {/* Walnut rail: navigation and the rival's seat. */}
@@ -293,7 +295,8 @@ function StandoffView({ initial, onNext, onLevel }: ViewProps) {
       )}
 
       {/* The felt. */}
-      <Animated.View style={[styles.table, { backgroundColor: tableColor, borderColor: c.feltDeep }, tableShake]}>
+      <Animated.View style={[styles.table, { backgroundColor: tableColor, borderColor: '#1a0f08' }, tableShake]}>
+        <FeltLight color={c.felt} tint={state.suddenDeath && !state.outcome ? c.dusk : undefined} />
         {state.suddenDeath && !state.outcome && <TumbleweedRoll trackWidth={width} />}
         {state.suddenDeath && !state.outcome && (
           <View style={[styles.suddenDeath, { backgroundColor: c.danger }]}>
