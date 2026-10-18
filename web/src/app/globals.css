@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+/* Wordoff design tokens (see ../DESIGN.md): the saloon card table. */
+@theme {
+  --color-walnut: #24160d;
+  --color-walnut-2: #2e1d13;
+  --color-plank: #4f3020;
+  --color-seam: #2e1a10;
+  --color-felt: #5a3a24;
+  --color-paper: #f1e1bf;
+  --color-paper-2: #f8edd6;
+  --color-ink: #24160c;
+  --color-ink-soft: #6a4c33;
+  --color-rule: #cdb48a;
+  --color-brass: #c8962e;
+  --color-brass-hi: #f0c870;
+  --color-brass-lo: #8f6519;
+  --color-navy: #24344f;
+  --color-oxblood: #9e2b25;
+  --color-cactus: #4f6b2e;
+  --color-cream: #f3e3c3;
+  --color-cream-soft: #c9b18c;
+  --color-card: #f6ead2;
+
+  --font-display: var(--font-ultra), serif;
+  --font-slab: var(--font-zilla), serif;
+
+  --animate-drift: drift 22s linear infinite;
+  --animate-float: float 7s ease-in-out infinite;
+}
+
+@keyframes drift {
+  from { transform: translateX(-60px); opacity: 0; }
+  15% { opacity: 0.75; }
+  85% { opacity: 0.75; }
+  to { transform: translateX(320px); opacity: 0; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(3deg); }
+  50% { transform: translateY(-10px) rotate(2.4deg); }
+}
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body {
+    background-color: var(--color-plank);
+    /* plank seams down the whole wall */
+    background-image: repeating-linear-gradient(180deg, transparent 0 78px, var(--color-seam) 78px 80px);
+    color: var(--color-cream);
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--color-brass); color: var(--color-walnut); }
+  :focus-visible { outline: 3px solid var(--color-brass-hi); outline-offset: 3px; border-radius: 6px; }
+}
+
+@layer components {
+  /* Aged paper: darkened edges, like a handbill that's hung outside a while. */
+  .paper {
+    background-color: var(--color-paper);
+    background-image: radial-gradient(ellipse at 50% 42%, transparent 55%, rgba(122, 74, 34, 0.34));
+    color: var(--color-ink);
+    box-shadow: 0 16px 38px rgba(0, 0, 0, 0.45);
+  }
+  .nail::before {
+    content: "";
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    width: 11px;
+    height: 11px;
+    margin-left: -5.5px;
+    border-radius: 9999px;
+    background: #3a2416;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
+  }
+  /* The primary action: a brass seal with a stitched inner edge. */
+  .seal {
+    display: inline-flex;
+    padding: 4px;
+    border-radius: 9px;
+    background: var(--color-brass);
+    color: #2a160d;
+    box-shadow: 0 3px 0 var(--color-brass-lo), 0 12px 26px rgba(0, 0, 0, 0.35);
+    transition: transform 140ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 140ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .seal > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border: 1.5px dashed #7a5310;
+    border-radius: 7px;
+    padding: 13px 24px;
+    font-family: var(--font-display);
+    letter-spacing: 0.14em;
+  }
+  .seal:hover { transform: translateY(-1px); }
+  .seal:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--color-brass-lo), 0 5px 12px rgba(0, 0, 0, 0.3); }
+
+  /* Reveal on scroll (driven by <Reveal>); visible by default without JS. */
+  .reveal { transition: opacity 700ms cubic-bezier(0.23, 1, 0.32, 1), transform 700ms cubic-bezier(0.23, 1, 0.32, 1); }
+  .js .reveal:not(.is-in) { opacity: 0; transform: translateY(26px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .js .reveal:not(.is-in) { opacity: 1 !important; transform: none !important; transition: none; }
+  .animate-drift, .animate-float { animation: none !important; }
+}
