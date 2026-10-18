@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { LayoutChangeEvent, StyleSheet, View, ViewStyle } from 'react-native';
-import Svg, { Circle, Defs, Pattern, RadialGradient, Rect, Stop } from 'react-native-svg';
+import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 /**
  * The card table's felt, lit from above: a warm pool of lamplight in the
- * middle falling off to darker edges, a fine nap in the cloth, and a thin
+ * middle falling off to darker edges, and a thin
  * brass inlay just inside the rail.
  */
-export function FeltLight({ color, tint }: { color: string; tint?: string }) {
+export const FeltLight = memo(function FeltLight({ color, tint }: { color: string; tint?: string }) {
   const [size, setSize] = useState({ w: 0, h: 0 });
   const onLayout = (e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
@@ -28,14 +28,9 @@ export function FeltLight({ color, tint }: { color: string; tint?: string }) {
               <Stop offset="0.6" stopColor="#000" stopOpacity="0" />
               <Stop offset="1" stopColor="#000" stopOpacity="0.42" />
             </RadialGradient>
-            <Pattern id="nap" width={4} height={4} patternUnits="userSpaceOnUse">
-              <Circle cx={1} cy={1} r={0.45} fill="#000" opacity={0.18} />
-              <Circle cx={3} cy={3} r={0.4} fill="#ffe2b0" opacity={0.06} />
-            </Pattern>
           </Defs>
           <Rect x={0} y={0} width={w} height={h} fill={color} />
           {tint && <Rect x={0} y={0} width={w} height={h} fill={tint} opacity={0.35} />}
-          <Rect x={0} y={0} width={w} height={h} fill="url(#nap)" />
           <Rect x={0} y={0} width={w} height={h} fill="url(#lamp)" />
           <Rect x={0} y={0} width={w} height={h} fill="url(#edge)" />
           {/* brass inlay inside the rail */}
@@ -44,10 +39,10 @@ export function FeltLight({ color, tint }: { color: string; tint?: string }) {
       )}
     </View>
   );
-}
+});
 
 /** Thin grain lines for walnut rails, drawn once over a solid wood ground. */
-export function WoodGrain({ lines = 5, color = '#3d2817', style }: { lines?: number; color?: string; style?: ViewStyle }) {
+export const WoodGrain = memo(function WoodGrain({ lines = 5, color = '#3d2817', style }: { lines?: number; color?: string; style?: ViewStyle }) {
   return (
     <View pointerEvents="none" style={[StyleSheet.absoluteFill, style]}>
       {Array.from({ length: lines }, (_, i) => (
@@ -67,4 +62,4 @@ export function WoodGrain({ lines = 5, color = '#3d2817', style }: { lines?: num
       ))}
     </View>
   );
-}
+});
