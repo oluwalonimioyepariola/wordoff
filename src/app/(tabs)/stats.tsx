@@ -1,8 +1,9 @@
 import { Alert, StyleSheet, Text, View } from 'react-native';
-import { Button, Card, H, P, Screen } from '../components/ui';
-import { dayNumber, getOpponent, OPPONENT_ORDER, streakStatus, totalRecord, winRate } from '../engine';
-import { useProfile } from '../store/profile';
-import { fonts, useTheme } from '../theme';
+import { router } from 'expo-router';
+import { Button, Card, H, LinkRow, P, Screen } from '../../components/ui';
+import { dayNumber, getOpponent, OPPONENT_ORDER, streakStatus, totalRecord, winRate } from '../../engine';
+import { useProfile } from '../../store/profile';
+import { fonts, useTheme } from '../../theme';
 
 export default function StatsScreen() {
   const { c } = useTheme();
@@ -20,7 +21,7 @@ export default function StatsScreen() {
   );
 
   return (
-    <Screen title="Stats">
+    <Screen title="Stats" tab>
       <Card>
         <H>Daily Standoff</H>
         <View style={styles.grid}>
@@ -74,6 +75,10 @@ export default function StatsScreen() {
             </View>
           );
         })}
+      </Card>
+
+      <Card style={{ paddingVertical: 4 }}>
+        <LinkRow label="Daily history" icon="calendar-month-outline" onPress={() => router.push('/history')} last />
       </Card>
 
       <Button
